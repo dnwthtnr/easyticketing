@@ -1,0 +1,15 @@
+{
+    "Request": {
+        "$style": "Style/request",
+        "Level": {
+            "Permission": "",
+            "Password Reset": ""
+            }
+        },
+    "Issue": {
+        "$style": "Style/issue",
+        "Level": {
+            
+            "Show Stopper": ""
+        }
+}
