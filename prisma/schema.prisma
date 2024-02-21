@@ -12,8 +12,57 @@ datasource db {
 }
   
 
-model Post {
-  id          Int         @default(autoincrement()) @id
-  text        String      @db.VarChar(600)
-  createdAt   DateTime    @default(now())
+model PermissionLevel{
+  PermissionLevelId Int @default(autoincrement()) @id
+  name String @db.Text
+  level Int @db.MediumInt
+
+  usersAtLevel User[] @relation("PermissionLevel")
+}
+
+model TicketType{
+  TicketTypeId Int @default(autoincrement()) @id
+  name String @db.Text
+
+  ticketsOfType Ticket[] @relation("TicketType")
+}
+
+model User{
+  userId Int @default(autoincrement()) @id
+  email String  @db.VarChar(600)
+  password String @db.Text
+
+  permissionLevel PermissionLevel @relation(name: "PermissionLevel", fields: [permissionLevelId], references: [PermissionLevelId])
+  permissionLevelId Int
+
+  authoredTickets Ticket[] @relation("AuthoredTickets")
+
+  assignedTickets Ticket[] @relation("AssignedTickets")
+
+  @@index([permissionLevelId])
+}
+
+model Ticket{
+
+  ticketId Int @default(autoincrement()) @id
+
+  
+  author User @relation(name: "AuthoredTickets", fields: [authorId], references: [userId])
+  authorId Int @unique
+
+  assigned User @relation(name: "AssignedTickets", fields: [assignedId], references: [userId])
+  assignedId Int @unique
+
+  ticketType TicketType @relation(name: "TicketType", fields: [ticketTypeId], references: [TicketTypeId])
+  ticketTypeId Int 
+
+  ticketTitle String @default("ticket title")
+
+  ticketBody String @default("Ticket description")
+
+  ticketCreationTime DateTime @default(now())
+
+
+  @@index([authorId, assignedId, ticketTypeId])
+  @@index([ticketTypeId])
 }
