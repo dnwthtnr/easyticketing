@@ -14,32 +14,41 @@ datasource db {
 
 model PermissionLevel{
   PermissionLevelId Int @default(autoincrement()) @id
-  name String @db.Text
-  level Int @db.MediumInt
+  PermissionLevelName String @db.Text @default("perm")
+  PermissionLevel Int @db.Int @default(0)
 
-  usersAtLevel User[] @relation("PermissionLevel")
-}
-
-model TicketType{
-  TicketTypeId Int @default(autoincrement()) @id
-  name String @db.Text
-
-  ticketsOfType Ticket[] @relation("TicketType")
+  PermissionedUsers User[] @relation("PermissionLevel")
 }
 
 model User{
-  userId Int @default(autoincrement()) @id
-  email String  @db.VarChar(600)
-  password String @db.Text
+  UserId Int @default(autoincrement()) @id
+  UserEmail String  @db.VarChar(600)
+  UserPassword String @db.Text
 
-  permissionLevel PermissionLevel @relation(name: "PermissionLevel", fields: [permissionLevelId], references: [PermissionLevelId])
-  permissionLevelId Int
+  CurrentPermissionLevel PermissionLevel @relation(name: "PermissionLevel", fields: [CurrentPermissionLevelId], references: [PermissionLevelId])
+  CurrentPermissionLevelId Int
 
-  authoredTickets Ticket[] @relation("AuthoredTickets")
+  UserAuthoredTickets Ticket[] @relation("AuthoredTickets")
 
-  assignedTickets Ticket[] @relation("AssignedTickets")
+  UserAssignedTickets Ticket[] @relation("AssignedTickets")
 
-  @@index([permissionLevelId])
+  @@index([CurrentPermissionLevelId])
+}
+
+
+model TicketType{
+  TicketTypeId Int @default(autoincrement()) @id
+  TicketTypeName String @db.Text
+
+  TicketsOfType Ticket[] @relation("TicketType")
+}
+
+
+model TicketStatus{
+  TicketStatusId Int @default(autoincrement()) @id
+  TicketStatusName String @db.Text
+
+  TicketsOfStatus Ticket[] @relation("TicketStatus")
 }
 
 model Ticket{
@@ -47,22 +56,27 @@ model Ticket{
   ticketId Int @default(autoincrement()) @id
 
   
-  author User @relation(name: "AuthoredTickets", fields: [authorId], references: [userId])
-  authorId Int @unique
+  AuthorUser User @relation(name: "AuthoredTickets", fields: [AuthorUserId], references: [UserId])
+  AuthorUserId Int @unique
 
-  assigned User @relation(name: "AssignedTickets", fields: [assignedId], references: [userId])
-  assignedId Int @unique
+  CurrentAssignedUser User @relation(name: "AssignedTickets", fields: [CurrentAssignedUserId], references: [UserId])
+  CurrentAssignedUserId Int @unique
 
-  ticketType TicketType @relation(name: "TicketType", fields: [ticketTypeId], references: [TicketTypeId])
-  ticketTypeId Int 
+  TicketStatus TicketStatus @relation(name: "TicketStatus", fields: [CurrentTicketStatusId], references: [TicketStatusId])
+  CurrentTicketStatusId Int
 
-  ticketTitle String @default("ticket title")
+  TicketType TicketType @relation(name: "TicketType", fields: [CurrentTicketTypeId], references: [TicketTypeId])
+  CurrentTicketTypeId Int 
 
-  ticketBody String @default("Ticket description")
+  TicketTitle String @default("ticket title")
 
-  ticketCreationTime DateTime @default(now())
+  TicketBody String @default("Ticket description")
+
+  TicketCreationTime DateTime @default(now())
 
 
-  @@index([authorId, assignedId, ticketTypeId])
-  @@index([ticketTypeId])
+  @@index([AuthorUserId])
+  @@index([CurrentAssignedUserId])
+  @@index([CurrentTicketTypeId])
+  @@index([CurrentTicketStatusId])
 }
