@@ -8,11 +8,13 @@
 
 <script lang="ts">
     import {widgetparams} from "./objecttimeline/params.js"
-    import getTickets from "$lib/api/tickets.js"
+    import {GetTickets} from "$lib/server/database/ticket_actions.js"
 
     import type {PageData} from "./$types"
     export let data: PageData
     $: ({users} = data)
+
+    GetTickets()
 
 </script>
 

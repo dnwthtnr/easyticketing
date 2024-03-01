@@ -14,7 +14,7 @@ datasource db {
 
 model PermissionLevel{
   PermissionLevelId Int @default(autoincrement()) @id
-  PermissionLevelName String @db.Text @default("perm")
+  PermissionLevelName String @db.Text
   PermissionLevel Int @db.Int @default(0)
 
   PermissionedUsers User[] @relation("PermissionLevel")
@@ -25,7 +25,7 @@ model User{
   UserEmail String  @db.VarChar(600)
   UserPassword String @db.Text
 
-  CurrentPermissionLevel PermissionLevel @relation(name: "PermissionLevel", fields: [CurrentPermissionLevelId], references: [PermissionLevelId])
+  CurrentPermissionLevel PermissionLevel? @relation(name: "PermissionLevel", fields: [CurrentPermissionLevelId], references: [PermissionLevelId])
   CurrentPermissionLevelId Int
 
   UserAuthoredTickets Ticket[] @relation("AuthoredTickets")
@@ -59,7 +59,7 @@ model Ticket{
   AuthorUser User @relation(name: "AuthoredTickets", fields: [AuthorUserId], references: [UserId])
   AuthorUserId Int @unique
 
-  CurrentAssignedUser User @relation(name: "AssignedTickets", fields: [CurrentAssignedUserId], references: [UserId])
+  CurrentAssignedUser User? @relation(name: "AssignedTickets", fields: [CurrentAssignedUserId], references: [UserId])
   CurrentAssignedUserId Int @unique
 
   TicketStatus TicketStatus @relation(name: "TicketStatus", fields: [CurrentTicketStatusId], references: [TicketStatusId])
