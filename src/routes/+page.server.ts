@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from "./$types";
-import {prisma} from "$lib/prisma.js"
+import {prisma} from "$lib/server/database/prisma.js"
 
 import bcrypt from "bcrypt"
 

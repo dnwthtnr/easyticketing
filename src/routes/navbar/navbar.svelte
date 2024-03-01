@@ -7,6 +7,9 @@
         <li>
             <a href="../">Timeline</a>
         </li>
+        <li>
+            <a href="../login">Login</a>
+        </li>
     </ul>
 </nav>
 

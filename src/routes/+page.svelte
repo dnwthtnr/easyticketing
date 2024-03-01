@@ -8,13 +8,13 @@
 
 <script lang="ts">
     import {widgetparams} from "./objecttimeline/params.js"
-    import {GetTickets} from "$lib/server/database/ticket_actions.js"
+    // import {GetTickets} from "$lib/server/database/ticket_actions.js"
 
-    import type {PageData} from "./$types"
+    import type {PageData} from "./$types.js"
     export let data: PageData
     $: ({users} = data)
 
-    GetTickets()
+    // GetTickets()
 
 </script>
 
