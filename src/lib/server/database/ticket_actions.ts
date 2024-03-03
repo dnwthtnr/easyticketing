@@ -61,12 +61,12 @@ export async function GetTickets(
         // Parameters are in same format as database 'prisma/schema.prisma' so a copy of the currently filled 
         // out parameters to search for can be used in prisma query
         const parameter_dict = {
-            AuthorId: AuthorId,
-            TicketTypeId: TicketTypeId,
-            TicketTitle: TicketTitle,
-            TicketBody: TicketBody,
-            AssignedUserId: AssignedUserId,
-            TicketStatusId: TicketStatusId
+            "AuthorId": AuthorId,
+            "TicketTypeId": TicketTypeId,
+            "TicketTitle": TicketTitle,
+            "TicketBody": TicketBody,
+            "AssignedUserId": AssignedUserId,
+            "TicketStatusId": TicketStatusId
         }
 
         const present_parameter_dict = parameter_dict

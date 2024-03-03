@@ -26,6 +26,7 @@
 	"dependencies": {
 		"@prisma/client": "^5.9.1",
 		"bcrypt": "^5.1.1",
+		"crypto": "^1.0.1",
 		"npx": "^10.2.2"
 	}
 }

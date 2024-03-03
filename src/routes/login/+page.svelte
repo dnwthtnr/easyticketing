@@ -2,22 +2,66 @@
 
     // import {GetUser} from "$lib/server/database/user_actions"
 
-    import {_LoginButtonClicked} from "./+page"
+    import loginStatus from "../../loginStore";
 
-    var email_input = ''
-    var password_input = ''
+    const credential_input = {
+        UserEmail: '',
+        UserPassword: ''
+    }
+    
+
+
+
+
+    var userId;
+    loginStatus.subscribe((value) => async function () {userId = value; console.warn(value);})
+
+
+    async function loginEvent(){
+        const _res = await fetch(
+            '/auth/login', 
+            {
+                method: 'POST',
+                body: JSON.stringify(credential_input),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+            )
+
+        const resultData = await _res.json()
+
+        console.log(resultData.user)
+            
+
+        if (_res.ok == false){
+            throw new Error(resultData.login_message)
+        }
+
+        loginStatus.set(resultData.UserId)
+
+    }
+    
+
 
 </script>
 
 
-<div class="Login Prompt">
 
-<input bind:value={email_input} placeholder="enter your name" />
-<input bind:value={password_input} placeholder="enter your name" />
 
-<button on:click={_LoginButtonClicked}>Login</button>
+<div class="LoginForm">
 
-</div>
-
+    <label for="EmailInput">Email</label>
+    <input id="EmailInput" type="email"  bind:value={credential_input.UserEmail} placeholder="enter your name" />
+    
+    <label for="PasswordInput">Password</label>
+    <input id="PasswordInput" type="password" bind:value={credential_input.UserPassword} placeholder="enter your name" />
+    
+    
+    <h1>{userId}</h1>
+    
+    <button type="submit" on:click={loginEvent}>Login</button>
+    
+    </div>
 
 

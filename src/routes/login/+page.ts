@@ -1,3 +1,3 @@
 export function _LoginButtonClicked(){
-    console.log("Clicked")
+    console.error("Clicked")
 }
