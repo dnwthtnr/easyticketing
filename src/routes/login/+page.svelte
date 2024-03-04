@@ -6,8 +6,10 @@
 
     const credential_input = {
         UserEmail: '',
-        UserPassword: ''
+        UserPassword: '',
+        StoreSession: false
     }
+    let rememberLogin = true;
     
 
 
@@ -15,6 +17,7 @@
 
     var userId;
     loginStatus.subscribe((value) => async function () {userId = value; console.warn(value);})
+
 
 
     async function loginEvent(){
@@ -56,6 +59,10 @@
     
     <label for="PasswordInput">Password</label>
     <input id="PasswordInput" type="password" bind:value={credential_input.UserPassword} placeholder="enter your name" />
+
+    
+    <label for="StoreSession">Remember Me?</label>
+    <input id="StoreSession" type="checkbox"  bind:value={credential_input.StoreSession} />
     
     
     <h1>{userId}</h1>

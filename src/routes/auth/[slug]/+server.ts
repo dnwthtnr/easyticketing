@@ -21,7 +21,6 @@ export const POST: RequestHandler = async event => {
     
     
     let operationResult;
-    let sql;
 
 
     switch(slug){
@@ -42,6 +41,19 @@ export const POST: RequestHandler = async event => {
     returnMessage.login_status = true;
     returnMessage.login_message = "Login Successful";
     returnMessage.user = operationResult
+
+    if (requestData.StoreSession == true){
+        console.log("Saving user session to cookie")
+        cookies.set(
+            "session", 
+            JSON.stringify(operationResult),
+            {
+                path: "/",
+                httpOnly: true,
+                sameSite: true
+            }
+            )            
+    }
 
     return json(returnMessage)
 }

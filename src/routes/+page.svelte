@@ -7,21 +7,31 @@
 
 
 <script lang="ts">
+
+
     import {widgetparams} from "./objecttimeline/params.js"
     // import {GetTickets} from "$lib/server/database/ticket_actions.js"
 
     import type {PageData} from "./$types.js"
-    export let data: PageData
-    $: ({users} = data)
+    import { goto } from "$app/navigation";
 
-    // GetTickets()
+    export let data
+
+    if (typeof window !== "undefined"){
+        if (data.session == undefined){goto("login");}
+    }
+
 
 </script>
 
 
 
 
-<div class="timeline">
+<h1>{data.session}</h1>
+
+
+
+<!-- <div class="timeline">
 
     <p>
         {#each users as user}
@@ -42,7 +52,7 @@
         {/each}
 
 
-</div>
+</div> -->
 
 
 
