@@ -6,20 +6,24 @@
 
 
 
-<script lang="ts">
+<script>
 
 
     import {widgetparams} from "./objecttimeline/params.js"
     // import {GetTickets} from "$lib/server/database/ticket_actions.js"
-
-    import type {PageData} from "./$types.js"
     import { goto } from "$app/navigation";
+    import { browser } from "$app/environment";
+    import {hasSavedUserSession} from "./cookie.js"
 
-    export let data
-
-    if (typeof window !== "undefined"){
-        if (data.session == undefined){goto("login");}
+    if (browser){
+        const hasSavedSession = hasSavedUserSession()
+        console.log(hasSavedSession)
+        if (hasSavedSession == null){
+            goto('login')
+        }
     }
+
+
 
 
 </script>
@@ -27,7 +31,7 @@
 
 
 
-<h1>{data.session}</h1>
+<h1>hi</h1>
 
 
 

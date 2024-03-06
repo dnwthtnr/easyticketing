@@ -1,69 +1,66 @@
-import type { Actions, PageServerLoad } from "./$types";
-import {prisma} from "$lib/server/database/prisma.js"
+// import type { Actions, PageServerLoad } from "./$types";
+// import {prisma} from "$lib/server/database/prisma.js"
 
-import { json } from "stream/consumers";
+// import { json } from "stream/consumers";
 
-import loginStatus from "../loginStore";
+// import loginStatus from "../loginStore";
 
-
-
-
+// import {setPersistentCookie, getPersistentCookie} from "./cookie.js"
 
 
+// export async function load({cookies}){
 
+//     let userSessionCookie = cookies.get('session') || null
 
-export const load = async ({cookies}) => {
+//     console.log('User session data', userSessionCookie)
 
+//     if (userSessionCookie == null){ return {userSessionCookie}; };
 
-    var session;
-    session = cookies.get('session')
+//     let storedUserDict = JSON.parse(userSessionCookie)
+//     if (typeof storedUserDict != 'object'){
+//         let session = null
+//         return {session}
+//     }
 
-    if (session == null){ return {session}; };
+//     const _res = await fetch(
+//         './auth/login', 
+//         {
+//             method: 'POST',
+//             body: JSON.stringify({UserEmail: storedUserDict.UserEmail, UserPassword: storedUserDict.UserPassword}),
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             }
+//         }
+//         )
 
-    let storedUserDict = JSON.parse(session)
-    if (typeof storedUserDict == 'object'){
-        let session = null
-        return {session}
-    }
-
-
-    const _res = await fetch(
-        '/auth/login', 
-        {
-            method: 'POST',
-            body: JSON.stringify({UserEmail: storedUserDict.UserEmail, UserPassword: storedUserDict.UserPassword}),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }
-        )
-
-    const resultData = await _res.json()
+//     const resultData = await _res.json()
     
-    if (resultData.ok == false){
-        // user no longer exists
-        session = null
-        return {session}
-    }
+//     if (resultData.ok == false){
+//         // user no longer exists
+//         userSessionCookie = null
+//         return {userSessionCookie}
+//     }
 
-    // Update data stored in cookie to reflect any changes 
-    let userDict = resultData.user;
-    cookies.set(
-        'session', 
-        JSON.stringify(userDict), 
-        {
-            path: "/",
-            httpOnly: true,
-            sameSite: true
-        }
-        )
+//     // Update data stored in cookie to reflect any changes 
+//     let userDict = resultData.user;
+//     cookies.set(
+//         'session', 
+//         JSON.stringify(userDict), 
+//         {
+//             path: "/",
+//             httpOnly: true,
+//             sameSite: true
+//         }
+//         )
 
-    session = userDict
 
-    loginStatus.set(session.UserId)
+//     userSessionCookie = userDict
+//     loginStatus.set(userDict)
 
-    return {
-        session
-    }
-};
+//     console.log('session cookie',userDict)
+
+//     return {
+//         session: userDict
+//     }
+// };
 
