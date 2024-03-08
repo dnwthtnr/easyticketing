@@ -1,8 +1,8 @@
-// @ts-nocheck
-import localStorage from "$app/environment"
+import { browser } from "$app/environment";
+import loginStatus from "../loginStore";
 
 
-const persistentCookiesKey = "PersistentCookies"
+export const persistentCookiesKey = "PersistentCookies"
 
 
 /**
@@ -27,8 +27,8 @@ export function getPersistentCookie(key){
 export function setPersistentCookie(key, value){
     const cookie = localStorage.setItem(key, value)
 
-    var persistentCookieNames = peristentCookieNames()
-    peristentCookieNames.push(key)
+    var persistentCookies = peristentCookieNames()
+    persistentCookies.push(key)
     localStorage.setItem(persistentCookiesKey, JSON.stringify(peristentCookieNames))
 
 }
@@ -56,21 +56,25 @@ export function peristentCookieNames(){
 
 
 //
-export async function hasSavedUserSession(){
+export async function getSavedUserSession(){
 
-    if (browser == null){
-        return null
+    if (browser != true){
+        return 
     }
+
+    console.log('browser', browser)
 
 
     var userSessionCookie = getPersistentCookie('session')
-    if (userSessionCookie === null){return null}
+    if (typeof userSessionCookie === 'undefined'){return null}
+
+    console.log(userSessionCookie, 'cookie', peristentCookieNames)
 
     let storedUserSession = JSON.parse(userSessionCookie)
 
     if (typeof storedUserSession != 'object'){return null}
 
-    const _res = await this.fetch(
+    const _res = await fetch(
         '/auth/login', 
         {
             method: 'POST',
@@ -90,15 +94,7 @@ export async function hasSavedUserSession(){
 
     // Update data stored in cookie to reflect any changes 
     let userDict = resultData.user;
-    cookies.set(
-        'session', 
-        JSON.stringify(userDict), 
-        {
-            path: "/",
-            httpOnly: true,
-            sameSite: true
-        }
-        )
+    // setPersistentCookie('session', JSON.stringify(userDict))
 
 
     userSessionCookie = userDict

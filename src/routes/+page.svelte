@@ -6,22 +6,41 @@
 
 
 
-<script>
+<script >
+    import { browser } from "$app/environment";
+    import loginStatus from "../loginStore.js";
 
 
-    import {widgetparams} from "./objecttimeline/params.js"
     // import {GetTickets} from "$lib/server/database/ticket_actions.js"
     import { goto } from "$app/navigation";
-    import { browser } from "$app/environment";
-    import {hasSavedUserSession} from "./cookie.js"
 
-    if (browser){
-        const hasSavedSession = hasSavedUserSession()
-        console.log(hasSavedSession)
-        if (hasSavedSession == null){
+
+    import {getSavedUserSession, getPersistentCookie} from "./cookie.js"
+
+
+    var userId;
+
+    $: user = $loginStatus
+
+    console.log(user)
+
+
+    async function validateUserSession(){
+        console.warn(localStorage)
+        const savedUserSession = await getSavedUserSession()
+        console.log('saved session:', userId, savedUserSession)
+        if (userId == null){
             goto('login')
         }
+        
     }
+
+
+    
+    if (browser){
+        validateUserSession()
+    }
+
 
 
 
@@ -31,7 +50,7 @@
 
 
 
-<h1>hi</h1>
+<h1>hi {userId}</h1>
 
 
 

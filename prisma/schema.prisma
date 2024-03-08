@@ -80,3 +80,9 @@ model Ticket{
   @@index([CurrentTicketTypeId])
   @@index([CurrentTicketStatusId])
 }
+
+
+model Session{
+  sessionId Int @default(autoincrement()) @id
+  sessionedUser User? @relation(name: "UserSession", fields: [], references: [])
+}

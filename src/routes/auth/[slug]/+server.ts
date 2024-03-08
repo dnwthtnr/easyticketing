@@ -2,7 +2,7 @@ import {json, error} from '@sveltejs/kit'
 import type { RequestHandler } from '@sveltejs/kit'
 import {prisma} from "$lib/server/database/prisma"
 
-import {ValidateUserLogin} from "$lib/server/database/user_actions"
+import {GetUserFromCredential} from "$lib/server/database/user_actions"
 
 
 
@@ -25,7 +25,7 @@ export const POST: RequestHandler = async event => {
 
     switch(slug){
         case 'login':
-            operationResult = await ValidateUserLogin(requestData.UserEmail, requestData.UserPassword)
+            operationResult = await GetUserFromCredential(requestData.UserEmail, requestData.UserPassword)
             break
         default:
             error(404, 'Endpoint /auth/${slug} is invalid.')
@@ -42,18 +42,18 @@ export const POST: RequestHandler = async event => {
     returnMessage.login_message = "Login Successful";
     returnMessage.user = operationResult
 
-    if (requestData.StoreSession == true){
-        console.log("Saving user session to cookie")
-        cookies.set(
-            "session", 
-            JSON.stringify(operationResult),
-            {
-                path: "/",
-                httpOnly: true,
-                sameSite: true
-            }
-            )            
-    }
+    // if (requestData.StoreSession == true){
+    //     console.log("Saving user session to cookie")
+    //     cookies.set(
+    //         "session", 
+    //         JSON.stringify(operationResult),
+    //         {
+    //             path: "/",
+    //             httpOnly: true,
+    //             sameSite: true
+    //         }
+    //         )            
+    // }
 
     return json(returnMessage)
 }

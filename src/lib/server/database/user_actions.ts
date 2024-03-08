@@ -1,6 +1,7 @@
 import {prisma} from "./prisma.js"
 import user from "../../../loginStore.js"
 import { generateResponse } from "../generate.js"
+import { fail } from "@sveltejs/kit"
 
 
 
@@ -82,7 +83,7 @@ export async function GetUser(UserEmail?: string, PermissionLevel?: number){
     return users
 }
 
-export async function ValidateUserLogin(UserEmail: string, UserPassword: string){
+export async function GetUserFromCredential(UserEmail: string, UserPassword: string){
     // Check user login credentials
 
     var response;
@@ -108,9 +109,17 @@ export async function ValidateUserLogin(UserEmail: string, UserPassword: string)
 
 
     if (password_valid == false){
-        return null
+        return new Error("User Credentials are Invalid.")
     }
 
 
     return user_dict
+}
+
+export async function GenerateUserSession(UserEmail: string, UserPassword: string){
+    const user = GetUserFromCredential(UserEmail, UserPassword)
+
+    
+    
+
 }

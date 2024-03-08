@@ -5,6 +5,7 @@
     import loginStatus from "../../loginStore";
     import {tick} from "svelte";
     import { goto } from "$app/navigation";
+    import {setPersistentCookie} from "../cookie"
 
     const credential_input = {
         UserEmail: '',
@@ -52,9 +53,11 @@
             throw new Error(resultData.login_message)
         }
 
-        loginStatus.set(resultData.UserId)
+        loginStatus.set(resultData.user)
 
-        goto("/ ")
+        console.log(loginStatus, resultData.user, localStorage)
+
+        goto("/")
 
     }
     
