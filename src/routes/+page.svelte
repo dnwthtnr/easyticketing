@@ -50,7 +50,7 @@
 
 
 
-<h1>hi {userId}</h1>
+<h1>Welcome to easy ticketing home page! Sign in or request to sign up</h1>
 
 
 

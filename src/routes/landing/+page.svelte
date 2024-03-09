@@ -10,7 +10,13 @@ console.log(data.user, 'user')
 </script>
 
 
-<!-- {#await user.UserEmail}
-{:then email} -->
-<h1>hello {data.user}</h1>
-<!-- {/await} -->
+<div>
+    <h1>Welcome Back</h1>
+</div>
+
+
+<style>
+    :global(){
+        display: flex;
+    }
+</style>

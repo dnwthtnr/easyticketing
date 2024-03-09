@@ -23,13 +23,13 @@ function loginEvent(){
 
 <div class="LoginForm">
     
-    <form action="?/login">
+    <form method="post">
         
         <label for="EmailInput">Email</label>
-        <input id="EmailInput" type="email"  bind:value={credential_input.UserEmail} on:change={InputChanged} placeholder="Email" />
+        <input name="EmailInput" type="email"  bind:value={credential_input.UserEmail} placeholder="Email" />
         
         <label for="PasswordInput">Password</label>
-        <input id="PasswordInput" type="password" bind:value={credential_input.UserPassword} on:change={InputChanged} placeholder="Password" />
+        <input name="PasswordInput" type="password" bind:value={credential_input.UserPassword} placeholder="Password" />
     
         
         <label for="StoreSession">Remember Me?</label>

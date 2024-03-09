@@ -45,7 +45,7 @@ export async function RegisterUser(UserEmail: string, password: string, permissi
     
 }
 
-export async function GetUser(UserEmail?: string, PermissionLevel?: number){
+export async function GetUser(UserEmail?: string, PermissionLevel?: number): Promise<{} | Error>{
     const parameter_dict = {
         "UserEmail": UserEmail,
         "PermissionLevel": PermissionLevel,
@@ -65,21 +65,22 @@ export async function GetUser(UserEmail?: string, PermissionLevel?: number){
         }
     }
 
-    var users = []
-
     if (Object.keys(present_parameter_dict).length == 0){
-        users = await prisma.user.findMany()
-        return users
+        return new Error('Must provide at least one parameter')
     }
 
 
-    users = await prisma.user.findMany(
-        {
-            where: present_parameter_dict
-        }
-    )
+    try {
+        var users = await prisma.user.findMany({where: present_parameter_dict})
+    } catch(error){
+        return new Error(String(error))
+    }
+    if (users.length == 0){
+        return new Error('No user found with given credentials')
+    }
+    const user = users.at(0)
 
-    return users
+    return user
 }
 
 export async function GetUserFromCredential(UserEmail: string, UserPassword: string){
@@ -87,14 +88,11 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
 
     var response;
 
-    const _result_user_list = GetUser(UserEmail=UserEmail)
+    const user_dict = await GetUser(UserEmail=UserEmail)
 
-    if ((await _result_user_list).length == 0){
+    if (user_dict == Error()){
         return new Error("User Credentials are Invalid.")
-        new Error('No user found with given email and password')
     }
-
-    const user_dict = (await _result_user_list).at(0)
 
 
 
@@ -109,6 +107,7 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
     if (password_valid == false){
         return new Error("User Credentials are Invalid.")
     }
+    console.log('userdict', user_dict)
 
 
     return user_dict
@@ -139,12 +138,17 @@ export async function getUserSession(UserId: number){
 
 export async function generateUserSession(UserEmail: string, UserPassword: string): Promise< Error|{} >{
     // Generates new user session - if one already exists
+
+    console.log(UserEmail, UserPassword)
+
     try {
         var user = await GetUserFromCredential(UserEmail, UserPassword)
     } catch(error) {
         const message = "Error occured when getting user from given credentials" + error
         return new Error(message)
     } 
+
+    console.log('User', user)
 
     if (user === Error()){
         return new Error(user.message)
@@ -168,13 +172,21 @@ export async function generateUserSession(UserEmail: string, UserPassword: strin
         var newSession = await prisma.session.create(
         {
             data: {
-                sessionedUser: {connect: {UserId: user?.UserId}}
+                sessionedUser: {connect: {UserId: await user.UserId}}
             }
         }
     )
 } catch(error) {
         return new Error(String(error))
     }
+
+    if (Object.keys(newSession).length == 0){
+        return new Error("Error creating session")
+    }
+
+
+
+    console.log('serverses', newSession)
 
     return newSession
 

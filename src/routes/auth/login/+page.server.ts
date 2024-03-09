@@ -23,13 +23,18 @@ export async function load({cookies}){
 
 export const actions =  {
     
-    login: async({request, cookies}) => {
+    default: async({request, cookies}) => {
+
+        console.log('default action')
+
+
         const formData = await request.formData()
 
-        const email = String(formData.get("email"))
-        const password = String(formData.get("password"))
+        console.log('formdata', formData.get("EmailInput"), formData.get("PasswordInput"))
 
-            // check user validity
+        const email = String(formData.get("EmailInput"))
+        const password = String(formData.get("PasswordInput"))
+
 
         try{
             var userSession = await generateUserSession(email, password)
@@ -38,12 +43,17 @@ export const actions =  {
         }
         if (userSession == Error()){
             console.error(userSession.message)
+            return redirect(300, '/auth/login')
             // display error to signify incorrect email or password
         }
 
-        await cookies.set(
+        
+        const storableUserSession = JSON.stringify(userSession)
+        console.log(userSession, 'usersession', storableUserSession)
+
+        cookies.set(
             SessionCookieKey, 
-            JSON.stringify(userSession),
+            storableUserSession,
             {
                 path: '/',
                 sameSite: 'lax'

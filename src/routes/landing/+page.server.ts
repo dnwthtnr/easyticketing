@@ -26,7 +26,7 @@ export async function load({cookies, parent}){
 
     console.log('client side session user id ' + userSession +user.sessionId)
     
-    var sessionedUser = getSessionedUser(user.sessionId)
+    var sessionedUser = await getSessionedUser(user.sessionId)
 
     console.log(sessionedUser)
 
