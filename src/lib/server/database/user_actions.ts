@@ -1,5 +1,4 @@
 import {prisma} from "./prisma.js"
-import user from "../../../loginStore.js"
 import { generateResponse } from "../generate.js"
 import { fail } from "@sveltejs/kit"
 
@@ -91,16 +90,15 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
     const _result_user_list = GetUser(UserEmail=UserEmail)
 
     if ((await _result_user_list).length == 0){
-        console.error("No user")
-        response = generateResponse(false, "Client Error", "User email and/or password are invalid!", null)
-        return response
+        return new Error("User Credentials are Invalid.")
+        new Error('No user found with given email and password')
     }
 
     const user_dict = (await _result_user_list).at(0)
 
 
 
-    if (typeof user_dict == "undefined"){ return null }
+    if (typeof user_dict == "undefined"){ return new Error('No user found with given email and password') }
 
     // const password_valid = await bcrypt.compare(UserPassword, user_dict.UserPassword)
 
@@ -116,10 +114,106 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
     return user_dict
 }
 
-export async function GenerateUserSession(UserEmail: string, UserPassword: string){
-    const user = GetUserFromCredential(UserEmail, UserPassword)
+
+
+export async function getUserSession(UserId: number){
+
+
+    const session = await prisma.session.findMany(
+        {where: {
+            sessionedUser: {UserId: UserId} }
+        }
+    )
+
+     if (session == null){
+        console.warn('No existent session found for user with ID', UserId)
+        return null
+     }
+
+     return session
+
+
+
+}
+
+
+export async function generateUserSession(UserEmail: string, UserPassword: string): Promise< Error|{} >{
+    // Generates new user session - if one already exists
+    try {
+        var user = await GetUserFromCredential(UserEmail, UserPassword)
+    } catch(error) {
+        const message = "Error occured when getting user from given credentials" + error
+        return new Error(message)
+    } 
+
+    if (user === Error()){
+        return new Error(user.message)
+    }
+
+    // const existingSessionArray = await getUserSession(user.UserId)
+
+    // if (existingSessionArray === Error()){
+    //     return new Error(existingSessionArray.message)
+    // }
+
+    // const existingSession = existingSessionArray?.at(0)
+
+
+    // if (existingSession !== null){
+    //     return existingSession
+    // }
+
+
+    try{
+        var newSession = await prisma.session.create(
+        {
+            data: {
+                sessionedUser: {connect: {UserId: user?.UserId}}
+            }
+        }
+    )
+} catch(error) {
+        return new Error(String(error))
+    }
+
+    return newSession
+
+}
 
     
-    
+export async function getSessionedUser(SessionId: number): Promise<{}|Error>{
+    // Gets user for session id
+
+    console.log('session id' + SessionId)
+
+    try {
+        var session = await prisma.session.findUniqueOrThrow({
+            where: {
+                sessionId: SessionId,
+            },
+            include: {
+                sessionedUser: true
+            }
+        })
+
+
+    } catch (error) {
+        return new Error(String(error))
+    }
+    // if ((sessions.length == 0)){
+    //     return new Error("No session found with sessionid" + SessionId)
+    // }
+
+    // const session = sessions.at(0)
+
+    try{
+        var sessionedUser = session?.sessionedUser
+    } catch(error) {
+        return new Error(String(error))
+    }
+
+    console.log('sessioned user thing', sessionedUser)
+
+    return await sessionedUser
 
 }

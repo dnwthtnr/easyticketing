@@ -32,6 +32,8 @@ model User{
 
   UserAssignedTickets Ticket[] @relation("AssignedTickets")
 
+  UserSession Session[] @relation("UserSession")
+
   @@index([CurrentPermissionLevelId])
 }
 
@@ -84,5 +86,9 @@ model Ticket{
 
 model Session{
   sessionId Int @default(autoincrement()) @id
-  sessionedUser User? @relation(name: "UserSession", fields: [], references: [])
+
+  sessionedUser User @relation(name: "UserSession", fields: [SessionedUserId], references: [UserId])
+  SessionedUserId Int @unique
+
+  @@index([SessionedUserId])
 }

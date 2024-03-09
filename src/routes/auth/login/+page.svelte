@@ -9,40 +9,11 @@
         UserPassword: '',
         StoreSession: false
     }
+   
 
-    async function loginEvent(){
-
-        console.log('Attempting login with parameters: ', credential_input)
-
-
-        const _res = await fetch(
-            '/auth/login', 
-            {
-                method: 'POST',
-                body: JSON.stringify(credential_input),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
-            )
-
-        const resultData = await _res.json()
-
-        console.log(resultData.user)
-            
-
-        if (_res.ok == false){
-            throw new Error(resultData.login_message)
-        }
-
-        loginStatus.set(resultData.user)
-
-        console.log(loginStatus, resultData.user, localStorage)
-
-        goto("/")
-
-    }
-    
+function loginEvent(){
+    goto('/landing')
+}
 
 
 </script>
@@ -52,7 +23,7 @@
 
 <div class="LoginForm">
     
-    <form method="POST" action="?/login">
+    <form action="?/login">
         
         <label for="EmailInput">Email</label>
         <input id="EmailInput" type="email"  bind:value={credential_input.UserEmail} on:change={InputChanged} placeholder="Email" />

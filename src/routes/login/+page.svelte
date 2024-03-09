@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 
     // import {GetUser} from "$lib/server/database/user_actions"
 
@@ -94,4 +94,4 @@
     }
 </style>
 
-
+ -->
