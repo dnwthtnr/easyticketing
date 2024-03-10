@@ -18,29 +18,6 @@
     import {getSavedUserSession, getPersistentCookie} from "./cookie.js"
 
 
-    var userId;
-
-    $: user = $loginStatus
-
-    console.log(user)
-
-
-    async function validateUserSession(){
-        console.warn(localStorage)
-        const savedUserSession = await getSavedUserSession()
-        console.log('saved session:', userId, savedUserSession)
-        if (userId == null){
-            goto('login')
-        }
-        
-    }
-
-
-    
-    if (browser){
-        validateUserSession()
-    }
-
 
 
 

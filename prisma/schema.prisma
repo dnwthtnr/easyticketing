@@ -25,6 +25,8 @@ model User{
   UserEmail String  @db.VarChar(600)
   UserPassword String @db.Text
 
+  UserName String @db.MediumText
+
   CurrentPermissionLevel PermissionLevel? @relation(name: "PermissionLevel", fields: [CurrentPermissionLevelId], references: [PermissionLevelId])
   CurrentPermissionLevelId Int
 
@@ -86,6 +88,8 @@ model Ticket{
 
 model Session{
   sessionId Int @default(autoincrement()) @id
+
+  SessionToken String @default("")
 
   sessionedUser User @relation(name: "UserSession", fields: [SessionedUserId], references: [UserId])
   SessionedUserId Int @unique

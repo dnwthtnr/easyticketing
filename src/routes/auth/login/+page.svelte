@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+
 
     // import {GetUser} from "$lib/server/database/user_actions"
 
@@ -23,7 +25,7 @@ function loginEvent(){
 
 <div class="LoginForm">
     
-    <form method="post">
+    <form method="post" use:enhance>
         
         <label for="EmailInput">Email</label>
         <input name="EmailInput" type="email"  bind:value={credential_input.UserEmail} placeholder="Email" />

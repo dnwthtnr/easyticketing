@@ -2,6 +2,8 @@ import {prisma} from "./prisma.js"
 import { generateResponse } from "../generate.js"
 import { fail } from "@sveltejs/kit"
 
+import { User, Session } from "$lib/types.js"
+
 
 
 export async function RegisterUser(UserEmail: string, password: string, permission_level: 0): Promise<void> {
@@ -45,7 +47,7 @@ export async function RegisterUser(UserEmail: string, password: string, permissi
     
 }
 
-export async function GetUser(UserEmail?: string, PermissionLevel?: number): Promise<{} | Error>{
+export async function GetUser(UserEmail?: string, PermissionLevel?: number): Promise<User | Error>{
     const parameter_dict = {
         "UserEmail": UserEmail,
         "PermissionLevel": PermissionLevel,
@@ -113,8 +115,6 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
     return user_dict
 }
 
-
-
 export async function getUserSession(UserId: number){
 
 
@@ -135,8 +135,7 @@ export async function getUserSession(UserId: number){
 
 }
 
-
-export async function generateUserSession(UserEmail: string, UserPassword: string): Promise< Error|{} >{
+export async function generateUserSession(UserEmail: string, UserPassword: string): Promise< Error|Session >{
     // Generates new user session - if one already exists
 
     console.log(UserEmail, UserPassword)
@@ -172,7 +171,7 @@ export async function generateUserSession(UserEmail: string, UserPassword: strin
         var newSession = await prisma.session.create(
         {
             data: {
-                sessionedUser: {connect: {UserId: await user.UserId}}
+                sessionedUser: {connect: {UserId: user?.UserId}}
             }
         }
     )
@@ -197,6 +196,10 @@ export async function getSessionedUser(SessionId: number): Promise<{}|Error>{
     // Gets user for session id
 
     console.log('session id' + SessionId)
+
+    if (typeof SessionId != 'number'){
+        return new Error("Given session ID is not of type: number/Int")
+    }
 
     try {
         var session = await prisma.session.findUniqueOrThrow({

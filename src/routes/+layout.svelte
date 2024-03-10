@@ -1,3 +1,10 @@
+<script lang="ts">
+    import Navbar from "./navbar/navbar.svelte"
+</script>
+
+
+<Navbar/>
+
 <div class="main-content">
     <slot></slot>
 </div>
