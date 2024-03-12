@@ -6,6 +6,28 @@ import { User, Session } from "$lib/types.js"
 
 
 
+export function generateParsableResponse(code: number, message: string, contentType: string): string{
+    const response = {
+        code: code,
+        ok: true,
+        message: {
+            contentType: contentType,
+            body: message
+        }
+
+    }
+
+    if (code >= 400){
+        response.ok = false
+    }
+
+    const responseString = JSON.stringify(response)
+
+    return responseString
+}
+
+
+
 export async function RegisterUser(UserEmail: string, password: string, permission_level: 0): Promise<void> {
 
     // const hashed_password = await bcrypt.hash(password, 12)
@@ -47,7 +69,7 @@ export async function RegisterUser(UserEmail: string, password: string, permissi
     
 }
 
-export async function GetUser(UserEmail?: string, PermissionLevel?: number): Promise<User | Error>{
+export async function GetUser(UserEmail?: string, PermissionLevel?: number): Promise< User | Error >{
     const parameter_dict = {
         "UserEmail": UserEmail,
         "PermissionLevel": PermissionLevel,
@@ -68,32 +90,35 @@ export async function GetUser(UserEmail?: string, PermissionLevel?: number): Pro
     }
 
     if (Object.keys(present_parameter_dict).length == 0){
-        return new Error('Must provide at least one parameter')
+        const responseString = generateParsableResponse(400, 'Must provide at least one parameter', "application")
+        return new Error(responseString)
     }
 
 
     try {
-        var users = await prisma.user.findMany({where: present_parameter_dict})
+        var user = await prisma.user.findFirstOrThrow(
+            {
+                where: present_parameter_dict
+            }
+            )
     } catch(error){
-        return new Error(String(error))
+        const responseString = generateParsableResponse(500, "Server error while attempting to find user", "text")
+        return new Error(responseString)
     }
-    if (users.length == 0){
-        return new Error('No user found with given credentials')
-    }
-    const user = users.at(0)
+
 
     return user
 }
 
-export async function GetUserFromCredential(UserEmail: string, UserPassword: string){
+export async function GetUserFromCredential(UserEmail: string, UserPassword: string): Promise< User | Error >{
     // Check user login credentials
 
     var response;
 
     const user_dict = await GetUser(UserEmail=UserEmail)
 
-    if (user_dict == Error()){
-        return new Error("User Credentials are Invalid.")
+    if (typeof user_dict == typeof Error()){
+        return <Error>user_dict
     }
 
 
@@ -107,12 +132,13 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
 
 
     if (password_valid == false){
-        return new Error("User Credentials are Invalid.")
+        const responseString = generateParsableResponse(401, "Invalid login credentials.", "text")
+        return new Error(responseString)
     }
     console.log('userdict', user_dict)
 
-
-    return user_dict
+    const user = <User>user_dict
+    return user
 }
 
 export async function getUserSession(UserId: number){
@@ -131,26 +157,58 @@ export async function getUserSession(UserId: number){
 
      return session
 
+}
+    
+export async function getSessionedUser(SessionId: number): Promise< User | Error >{
+    // Gets user for session id
 
+    console.log('session id' + SessionId)
+
+    if (typeof SessionId != 'number'){
+        const responseString = generateParsableResponse(500, "Given session ID is not of type: number/Int", "text")
+        return new Error(responseString)
+    }
+
+    try {
+        var session = await prisma.session.findUniqueOrThrow({
+            where: {
+                sessionId: SessionId,
+            },
+            include: {
+                sessionedUser: true
+            }
+        })
+
+
+    } catch (error) {
+        console.error(error)
+
+        const responseString = generateParsableResponse(500, "Server error while attempting to find session", "text")
+        return new Error(responseString)
+    }
+    // if ((sessions.length == 0)){
+    //     return new Error("No session found with sessionid" + SessionId)
+    // }
+
+    // const session = sessions.at(0)
+
+    var sessionedUser = session?.sessionedUser
+
+    const user = <User>sessionedUser
+    
+    return user
 
 }
 
-export async function generateUserSession(UserEmail: string, UserPassword: string): Promise< Error|Session >{
+
+export async function loginUser(UserEmail: string, UserPassword: string): Promise< Error | Session >{
     // Generates new user session - if one already exists
 
     console.log(UserEmail, UserPassword)
 
-    try {
-        var user = await GetUserFromCredential(UserEmail, UserPassword)
-    } catch(error) {
-        const message = "Error occured when getting user from given credentials" + error
-        return new Error(message)
-    } 
-
-    console.log('User', user)
-
-    if (user === Error()){
-        return new Error(user.message)
+    var user = await GetUserFromCredential(UserEmail, UserPassword)
+    if (user == Error()){
+        return <Error>user
     }
 
     // const existingSessionArray = await getUserSession(user.UserId)
@@ -176,59 +234,22 @@ export async function generateUserSession(UserEmail: string, UserPassword: strin
         }
     )
 } catch(error) {
-        return new Error(String(error))
+
+    console.error(error)
+
+    const responseString = generateParsableResponse(500, "Server error while attempting to create session.", "text")
+    return new Error(responseString)
     }
 
     if (Object.keys(newSession).length == 0){
-        return new Error("Error creating session")
+        const responseString = generateParsableResponse(500, "Server error while attempting to create user session.", "text")
+        return new Error(responseString)
     }
 
 
 
     console.log('serverses', newSession)
 
-    return newSession
-
-}
-
-    
-export async function getSessionedUser(SessionId: number): Promise<{}|Error>{
-    // Gets user for session id
-
-    console.log('session id' + SessionId)
-
-    if (typeof SessionId != 'number'){
-        return new Error("Given session ID is not of type: number/Int")
-    }
-
-    try {
-        var session = await prisma.session.findUniqueOrThrow({
-            where: {
-                sessionId: SessionId,
-            },
-            include: {
-                sessionedUser: true
-            }
-        })
-
-
-    } catch (error) {
-        return new Error(String(error))
-    }
-    // if ((sessions.length == 0)){
-    //     return new Error("No session found with sessionid" + SessionId)
-    // }
-
-    // const session = sessions.at(0)
-
-    try{
-        var sessionedUser = session?.sessionedUser
-    } catch(error) {
-        return new Error(String(error))
-    }
-
-    console.log('sessioned user thing', sessionedUser)
-
-    return await sessionedUser
+    return <Session>newSession
 
 }

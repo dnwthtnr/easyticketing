@@ -1,21 +1,27 @@
 import type { ObjectType } from "typescript"
 import {prisma} from "./prisma.js"
 
+import { Ticket, Team } from "$lib/types.js"
 
 
-export async function GetNullUserId(){
-    return 0
+function itemInArray(item: any, array: Array<any>): boolean{
+    if (array.indexOf(item) > -1){
+        return true
+    }
+    return false
 }
 
 
 
 export async function RegisterTicket(
     AuthorId: number, 
+    TeamId: number,
     TicketTypeId: number, 
     TicketTitle: string, 
     TicketBody: string, 
     AssignedUserId?: number, 
-    TicketStatusId?: number 
+    TicketStatusId?: number
+     
     ){
 
         // Function for creating a new ticket
@@ -31,6 +37,7 @@ export async function RegisterTicket(
                 {
                     data: {
                         AuthorUser: {connect: {UserId: AuthorId}},
+                        Team: {connect: {TeamId: TeamId}},
                         CurrentAssignedUser: {connect: {UserId: AssignedUserId}},
                         TicketStatus: {connect: {TicketStatusId: TicketStatusId}},
                         TicketType: {connect: {TicketTypeId: TicketTypeId}},
@@ -49,53 +56,170 @@ export async function RegisterTicket(
     }
 
 
-export async function GetTickets(
-    AuthorId?: number, 
-    TicketTypeId?: number, 
-    TicketTitle?: string, 
-    TicketBody?: string, 
-    AssignedUserId?: number, 
-    TicketStatusId?: number 
-    ){
+export async function getPermissionLevel(
+    PermissionLevelId?: number, 
+    PermissionLevel?: number, 
+    PermissionLevelName?: string, 
+    include?: Array<string>
+    ): Promise< object | Error > {
+    if (include == null){
+        include = []
+    }
 
-        // Parameters are in same format as database 'prisma/schema.prisma' so a copy of the currently filled 
-        // out parameters to search for can be used in prisma query
-        const parameter_dict = {
-            "AuthorId": AuthorId,
-            "TicketTypeId": TicketTypeId,
-            "TicketTitle": TicketTitle,
-            "TicketBody": TicketBody,
-            "AssignedUserId": AssignedUserId,
-            "TicketStatusId": TicketStatusId
-        }
-
-        const present_parameter_dict = parameter_dict
-
-        for (let parameter_name in Object.keys(parameter_dict)){
-
-            var parameter_key = parameter_name as keyof Object
-
-            let parameter_value = parameter_dict[parameter_key]
-
-            if (parameter_value == null){
-                delete present_parameter_dict[parameter_key]
-                continue
-            }
-        }
-
-        var tickets = []
-
-        if (Object.keys(present_parameter_dict).length == 0){
-            tickets = await prisma.ticket.findMany()
-            return tickets
-        }
+    var searchParameter = {
+        "PermissionLevelId": PermissionLevelId, 
+        "PermissionLevel": PermissionLevel, 
+        "PermissionLevelName": PermissionLevelName
+    }
 
 
-        tickets = await prisma.ticket.findMany(
+    try {
+        var permissionLevel = await prisma.permissionLevel.findUniqueOrThrow(
             {
-                where: present_parameter_dict
+                where: searchParameter,
+                include: {
+                    VisibleTeams: itemInArray("VisibleTeams", include),
+                    PermissionedUsers: itemInArray("PermissionedUsers", include)
+                }
+            }
+        )
+    } catch (error) {
+        return new Error(String(error))
+    }
+    if (permissionLevel == null){
+        return new Error('No permission level matching given name and/or id')
+    }
+
+    return permissionLevel
+    
+}
+
+export async function registerTeam(TeamName: string, TeamDescription: string, PublicPermLevel: number, TeamOrganizerId: number) {
+    var permissionLevel = await getPermissionLevel(undefined, PublicPermLevel)
+    if (permissionLevel == Error()){
+        console.log('Given permission level encounter an exception. setting to value 0:', permissionLevel.message)
+        permissionLevel = await getPermissionLevel(undefined, 0)
+    }
+
+    try {
+        
+        await prisma.team.create(
+            {
+                data: {
+                    TeamName: TeamName,
+                    TeamDescription: TeamDescription,
+                    TeamOrganizers: {connect: {UserId: TeamOrganizerId}},
+                    PublicPermLevel: {connect: {PermissionLevelId: permissionLevel.PermissionLevelId}}
+
+                }
             }
         )
 
+    } catch (error) {
+        return new Error(String(error))
+    }
+    
+}
+
+
+export async function getTeam(TeamName?: string, TeamId?: number, include?: Array<string>): Promise< object | Error > {
+
+    
+    if (include == null){
+        include = []
+    }
+
+    var searchParameter = {"TeamName": TeamName, "TeamId": TeamId}
+
+    try {
+        var team = await prisma.team.findUniqueOrThrow(
+            {
+                where: searchParameter,
+                include: {
+                    TeamMembers: itemInArray("TeamMembers", include),
+                    TeamTickets: itemInArray("TeamTickets", include)
+
+                }
+            }
+        )
+    } catch (error) {
+        return new Error(String(error))
+    }
+    if (team == null){
+        return new Error('No team matching given name and/or id')
+    }
+
+    return team
+
+    
+
+}
+
+export async function getTeamTickets(TeamName?: string, TeamId?: number): Promise< Array<object> | Error > {
+    //include user for tickets
+    var searchParameter = {"TeamName": TeamName, "TeamId": TeamId}
+    try {
+        var tickets = await prisma.ticket.findMany(
+            {
+                where: {
+                    Team: searchParameter
+                },
+                include: {
+                    AuthorUser: true,
+                    CurrentAssignedUser: true,
+                    TicketStatus: true,
+                    TicketType: true
+                }
+            }
+        )
+    } catch (error) {
+        return new Error(String(error))
+    }
+    if (tickets == null){
+        return new Error('No tickets belonging to team with given name and/or id')
+    }
+
     return tickets
+
+}
+
+export async function getUserTickets(UserId?: number, UserName?: string, UserRelation=("Author" || "Assigned")): Promise< Array<object> | Error > {
+    //include user for tickets
+
+    var searchParameter = {"UserId": UserId, "UserName": UserName}
+
+    const getQueryParameters = (UserRelation: string, searchParameter: object) => { 
+        if(UserRelation == "Author"){
+            return {AuthorUser: searchParameter}
+        } 
+        else {
+            return {CurrentAssignedUser: searchParameter}
+        }
+    }
+
+    const queryParameters = getQueryParameters(UserRelation, searchParameter)
+
+
+
+    try {
+        var tickets = await prisma.ticket.findMany(
+            {
+                where: queryParameters,
+                include: {
+                    AuthorUser: true,
+                    CurrentAssignedUser: true,
+                    TicketStatus: true,
+                    TicketType: true
+                }
+            }
+        )
+    } catch (error) {
+        return new Error(String(error))
+    }
+    if (tickets == null){
+        return new Error('No tickets belonging to team with given name and/or id')
+    }
+
+    return tickets
+
 }

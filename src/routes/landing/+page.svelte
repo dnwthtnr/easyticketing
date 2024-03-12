@@ -2,16 +2,15 @@
     
 import type {PageServerLoad, RouteParams} from "./$types"
 
-export let data: PageServerLoad
+export let data
 
 // const user = JSON.parse(data.user)
-console.log(data.user, 'user')
 
 </script>
 
 
 <div>
-    <h1>Welcome Back</h1>
+    <h1>Welcome Back {data.user}</h1>
 </div>
 
 

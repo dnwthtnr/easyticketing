@@ -1,31 +1,18 @@
 import { fail, redirect } from '@sveltejs/kit'
 
 
-import { GetUserFromCredential, generateUserSession, getUserSession } from '$lib/server/database/user_actions.js'
+import { loginUser } from '$lib/server/database/user_actions.js'
 import { SessionCookieKey } from '$lib/constants.js'
-
-
-export async function load({cookies}){
-    //check for existent user cookie
-    var userSession = cookies.get(SessionCookieKey)
-    if (userSession != null){
-        console.log('User already has existent session cookie. Redirecting to: "home"')
-        redirect(300, '/landing')
-    }
-     
-    const data = {
-        SessionCookieKey: userSession
-    }
-
-    return data
-}
 
 
 export const actions =  {
     
     default: async({request, cookies}) => {
 
-        console.log('default action')
+        const response = {
+            success: false,
+            message: ""
+        }
 
 
         const formData = await request.formData()
@@ -37,13 +24,14 @@ export const actions =  {
 
 
         try{
-            var userSession = await generateUserSession(email, password)
+            var userSession = await loginUser(email, password)
         } catch(error) {
             return fail(500)
         }
         if (userSession == Error()){
-            console.error(userSession.message)
-            return redirect(300, '/auth/login')
+            var errorResponse = JSON.parse(userSession.message)
+            console.log(userSession.message)
+            return fail(errorResponse.code, errorResponse.message.body)
             // display error to signify incorrect email or password
         }
 
@@ -59,6 +47,10 @@ export const actions =  {
                 sameSite: 'lax'
             }
             )
+
+        return {
+            success: true
+        }
 
 
     }

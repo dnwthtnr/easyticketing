@@ -1,33 +1,66 @@
 
 
 export class User {
-    name: String
-    email: String
-    permissionLevel: number
+    UserId!: number
+    UserEmail!: String
+    UserName!: string
 
-    constructor(attributeObject: {
+    CurrentPermissionLevel?: object
+    CurrentPermissionLevelId!: number
 
-        email: String,
-        permissionLevel: number,
-        name: String
+    UserAuthoredTickets?: object
+    UserAssignedTickets?: object
 
-    }) {
-        this.name = attributeObject.name,
-        this.email = attributeObject.email,
-        this.permissionLevel = attributeObject.permissionLevel
+    UserSession?: object
+
+    UserPassword?: null | string
+
+    constructor(){
+        this.UserPassword = null
     }
 
 }
 
 export class Session {
-    sessionId: number
-    sessionToken: String
-
-    constructor(attributeObject: { sessionId: number, sessionToken: String }) {
-        this.sessionId = attributeObject.sessionId,
-        this.sessionToken = attributeObject.sessionToken
-    }
+    sessionId!: number
+    SessionToken!: String
+    SessionedUserId!: number
+    sessionedUser?: object
 
 }
+
+export class Ticket {
+    ticketId!: number
+    AuthorUser?: object
+    AuthorUserId!: number
+    CurrentAssignedUser?: object
+
+    TicketStatus?: object
+    CurrentTicketStatusId!: number
+
+    TicketType!: object
+    CurrentTicketTypeId!: number
+
+
+    TicketTitle!: string
+    TicketBody!: string
+    TicketCreationTime!: string
+
+}
+
+export class Team {
+    TeamId!: number
+
+    TeamName!: string
+    TeamDescription!: string
+    TeamMembers?: User[]
+
+    TeamTickets?: Ticket[]
+    PublicPermLevel?: object
+
+    PublicPermLevelId!: number
+
+}
+
 
 

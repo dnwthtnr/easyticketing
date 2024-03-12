@@ -17,6 +17,10 @@ function loginEvent(){
     goto('/landing')
 }
 
+export let form;
+export let data;
+
+
 
 </script>
 
@@ -32,6 +36,10 @@ function loginEvent(){
         
         <label for="PasswordInput">Password</label>
         <input name="PasswordInput" type="password" bind:value={credential_input.UserPassword} placeholder="Password" />
+
+        {#if form?.success == false}
+        <h1> so bas</h1>
+        {/if}
     
         
         <label for="StoreSession">Remember Me?</label>
