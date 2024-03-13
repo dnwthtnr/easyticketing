@@ -6,7 +6,7 @@
 
 <Navbar/>
 <div class="main-content">
-
+    
     <div class="div-level2">
         <slot></slot>
     </div>

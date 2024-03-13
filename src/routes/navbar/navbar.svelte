@@ -17,9 +17,6 @@ const navigationItems = {
     "Teams": {
         path: ""
     },
-    "Documentation": {
-        path: "../documentation"
-    },
     "Help": {
         path: "../help"
     }
@@ -49,6 +46,12 @@ const navigationItems = {
     .navbar{
         display: flex;
         background-color: #4A6FA5;
+        /* background-color: #d3d7e2; */
+
+    /* outline-width: 5%;
+    outline-style: solid;
+    outline-color: #898f97;
+    outline-offset: 15px; */
     }
     ul{
         display: flex;
@@ -56,19 +59,20 @@ const navigationItems = {
         width: 100%;
         height: 100%;
         margin: 0;
+        padding: 0;
 
-        justify-content: center;
+        justify-content: left;
 
-        background-color: #73a54a;
+        /* background-color: #73a54a; */
         
-        word-spacing: 5%;
     }
     li{
         display: flex;
-        font-size: large;
-        width: 100%;
+        width: 5%;
         height: 100%;
-
         margin: 0;
+        
+        /* padding: .5%; */
+
     }
 </style>
