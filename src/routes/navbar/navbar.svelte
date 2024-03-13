@@ -1,17 +1,30 @@
 <script lang="ts">
-    import type { PageData } from "../$types";
+    import { User } from "$lib/types";
+    import type { PageData, PageServerData } from "../$types";
+
+    import NavigableText from "./linkText.svelte"
 
 
-export let data: PageData
-
+export let data: PageServerData;
 
 const navigationItems = {
     "Home": {
-        path: "/"
+        path: "../"
     },
+    "Timeline": {
+        path: "../ticket"
+    },
+    "Teams": {
+        path: ""
+    },
+    "Documentation": {
+        path: "../documentation"
+    },
+    "Help": {
+        path: "../help"
+    }
 
 }
-
 
 </script>
 
@@ -23,29 +36,39 @@ const navigationItems = {
 
 <nav class="navbar">
     <ul>
-        <li>
-            <a href="../home">home</a>
-        </li>
-        <li>
-            <a href="../">Timeline</a>
-        </li>
-        <li>
-            <a href="../login">Login</a>
-        </li>
+        {#each Object.entries(navigationItems) as [item, itemDict]}
+            <li>
+                <NavigableText hrefText={itemDict.path} displayText={item}/>
+                <!-- <a href={itemDict.path}>{item}</a> -->
+            </li>
+        {/each}
     </ul>
 </nav>
 
 <style>
-    nav{
+    .navbar{
         display: flex;
+        background-color: #4A6FA5;
     }
     ul{
         display: flex;
-        list-style: none;
+
+        width: 100%;
+        height: 100%;
+        margin: 0;
+
+        justify-content: center;
+
+        background-color: #73a54a;
+        
+        word-spacing: 5%;
     }
     li{
         display: flex;
-        margin-right: 20px;
         font-size: large;
+        width: 100%;
+        height: 100%;
+
+        margin: 0;
     }
 </style>

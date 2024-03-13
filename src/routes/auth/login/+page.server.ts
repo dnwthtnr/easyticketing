@@ -9,10 +9,6 @@ export const actions =  {
     
     default: async({request, cookies}) => {
 
-        const response = {
-            success: false,
-            message: ""
-        }
 
 
         const formData = await request.formData()
@@ -28,10 +24,13 @@ export const actions =  {
         } catch(error) {
             return fail(500)
         }
-        if (userSession == Error()){
+        if (typeof userSession == typeof Error()){
             var errorResponse = JSON.parse(userSession.message)
-            console.log(userSession.message)
-            return fail(errorResponse.code, errorResponse.message.body)
+            console.log('eRRRR',userSession.message)
+
+            errorResponse.message.error = true
+
+            return fail(errorResponse.code, errorResponse.message)
             // display error to signify incorrect email or password
         }
 

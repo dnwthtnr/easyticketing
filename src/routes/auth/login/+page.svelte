@@ -27,9 +27,9 @@ export let data;
 
 
 
-<div class="LoginForm">
+<div >
     
-    <form method="post" use:enhance>
+    <form class="LoginForm" method="post" use:enhance>
         
         <label for="EmailInput">Email</label>
         <input name="EmailInput" type="email"  bind:value={credential_input.UserEmail} placeholder="Email" />
@@ -37,8 +37,8 @@ export let data;
         <label for="PasswordInput">Password</label>
         <input name="PasswordInput" type="password" bind:value={credential_input.UserPassword} placeholder="Password" />
 
-        {#if form?.success == false}
-        <h1> so bas</h1>
+        {#if form?.error}
+        <h1> so bas {form?.body}</h1>
         {/if}
     
         

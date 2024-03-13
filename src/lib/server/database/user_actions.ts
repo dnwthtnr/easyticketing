@@ -102,6 +102,7 @@ export async function GetUser(UserEmail?: string, PermissionLevel?: number): Pro
             }
             )
     } catch(error){
+        console.error(error)
         const responseString = generateParsableResponse(500, "Server error while attempting to find user", "text")
         return new Error(responseString)
     }
@@ -207,7 +208,7 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
     console.log(UserEmail, UserPassword)
 
     var user = await GetUserFromCredential(UserEmail, UserPassword)
-    if (user == Error()){
+    if (typeof user == typeof Error()){
         return <Error>user
     }
 
@@ -223,6 +224,8 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
     // if (existingSession !== null){
     //     return existingSession
     // }
+
+    console.log(user, typeof user)
 
 
     try{

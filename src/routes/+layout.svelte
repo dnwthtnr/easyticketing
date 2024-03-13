@@ -3,13 +3,21 @@
 </script>
 
 
-<Navbar/>
 
+<Navbar/>
 <div class="main-content">
-    <slot></slot>
+
+    <div class="div-level2">
+        <slot></slot>
+    </div>
+
 </div>
 
 <style>
+    :global(body){
+        margin: 0%;
+        padding: 0%;
+    }
     .main-content {
         width: 100%;
         height: 100vh;
@@ -18,6 +26,19 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #232946;
+        flex-flow: column;
+        /* background: #7d9bc9; */
+    }
+    .div-level2{
+        /* margin-left: 5%;
+        margin-right: 5%; */
+        width: 90%;
+        height: 100vh;
+        
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #FEFFFE;
     }
 </style>

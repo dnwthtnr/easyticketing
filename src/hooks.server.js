@@ -5,19 +5,18 @@ import { getSessionedUser } from '$lib/server/database/user_actions';
 export async function handle({event, resolve}){
     const sessionCookie = event.cookies.get(SessionCookieKey);
 
-    event.locals.user = null // set null in case of failed session validations
-    
+    event.locals.user = {} // set null in case of failed session validations
     const loginPath = '/auth/login'
     const nonProtectedRoutes = ["/", loginPath]
+
 
 // #region Validate User Session
 
 
     // Check if no cookie present and redirect if needed
     if (typeof sessionCookie === "undefined" || sessionCookie == null){
-        const targetUrl = event.url.pathname
 
-        if (nonProtectedRoutes.indexOf(targetUrl) <= -1){
+        if (nonProtectedRoutes.indexOf(event.url.pathname) <= -1){
             throw redirect(302, loginPath)
         }
 
@@ -36,6 +35,8 @@ export async function handle({event, resolve}){
     if (Object.keys(sessionCookieObject).length == 0){
         console.error("Present session cookie has a size of 0. Deleting present cookie")
         event.cookies.delete(SessionCookieKey, {path: '/'})
+
+
         throw redirect(302, "/auth/login")
     }
 
@@ -53,8 +54,8 @@ export async function handle({event, resolve}){
 // #endregion
 
 
-    // redirect if user is trying to log in
-    if (event.url.pathname == loginPath){
+    // redirect if user is trying to log in or go to non-member home page
+    if (nonProtectedRoutes.indexOf(event.url.pathname) <= -1){
         throw redirect(302, "/landing")
     }
 
