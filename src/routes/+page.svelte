@@ -17,8 +17,16 @@
 
     import {getSavedUserSession, getPersistentCookie} from "./cookie.js"
 
+    import {} from "./elements/authhrefbuttons.svelte"
+    import Reg from "./elements/authhrefbuttons.svelte"
+    import Login from "./elements/authhrefbuttons.svelte"
+    import { redirect } from "@sveltejs/kit";
 
 
+    function loginRedirect(){
+        console.log('asdasd')
+        throw redirect(303, "/auth/login")
+    }
 
 
 
@@ -28,6 +36,10 @@
 
 
 <h1>Welcome to easy ticketing home page! Sign in or request to sign up</h1>
+
+<div>
+    <Login/>
+</div>
 
 
 

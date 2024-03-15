@@ -11,11 +11,8 @@ const navigationItems = {
     "Home": {
         path: "../"
     },
-    "Timeline": {
-        path: "../ticket"
-    },
-    "Teams": {
-        path: ""
+    "Spaces": {
+        path: "../spaces"
     },
     "Help": {
         path: "../help"
@@ -67,10 +64,11 @@ const navigationItems = {
         
     }
     li{
+
+        padding-inline: .5%;
+
         display: flex;
-        width: 5%;
         height: 100%;
-        margin: 0;
         
         /* padding: .5%; */
 

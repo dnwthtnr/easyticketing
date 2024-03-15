@@ -28,7 +28,7 @@ export function generateParsableResponse(code: number, message: string, contentT
 
 
 
-export async function RegisterUser(UserEmail: string, password: string, permission_level: 0): Promise<void> {
+export async function RegisterUser(UserEmail: string, password: string, userName: string, permission_level: 0): Promise<void> {
 
     // const hashed_password = await bcrypt.hash(password, 12)
 
@@ -58,7 +58,8 @@ export async function RegisterUser(UserEmail: string, password: string, permissi
             data: {
                 UserEmail: UserEmail,
                 UserPassword: hashed_password,
-                CurrentPermissionLevel: {connect: {PermissionLevelId: permission_level_dict?.PermissionLevelId}}
+                CurrentPermissionLevel: {connect: {PermissionLevelId: permission_level_dict?.PermissionLevelId}},
+                UserName: userName
             }
         }
         )

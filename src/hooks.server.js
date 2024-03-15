@@ -7,7 +7,7 @@ export async function handle({event, resolve}){
 
     event.locals.user = {} // set null in case of failed session validations
     const loginPath = '/auth/login'
-    const nonProtectedRoutes = ["/", loginPath]
+    const nonProtectedRoutes = ["/", loginPath, "/auth/register"]
 
 
 // #region Validate User Session
