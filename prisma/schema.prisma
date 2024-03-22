@@ -8,14 +8,14 @@ datasource db {
   relationMode = "prisma"
 }
 
-model Team {
-  TeamId            Int             @id @default(autoincrement())
-  TeamName          String          @db.Text
-  TeamDescription   String          @db.LongText
+model Space {
+  SpaceId            Int             @id @default(autoincrement())
+  SpaceName          String          @db.Text
+  SpaceDescription   String          @db.LongText
   PublicPermLevelId Int
-  TeamOrganizers    User[]          @relation("TeamOrganizers")
-  TeamMembers       User[]          @relation("TeamMembers")
-  TeamTickets       Ticket[]        @relation("TeamTickets")
+  SpaceOrganizers    User[]          @relation("SpaceOrganizers")
+  SpaceMembers       User[]          @relation("SpaceMembers")
+  SpaceTickets       Ticket[]        @relation("SpaceTickets")
   PublicPermLevel   PermissionLevel @relation("PublicPermLevel", fields: [PublicPermLevelId], references: [PermissionLevelId])
 
   @@index([PublicPermLevelId])
@@ -25,7 +25,7 @@ model PermissionLevel {
   PermissionLevelId   Int    @id @default(autoincrement())
   PermissionLevelName String @db.Text
   PermissionLevel     Int    @default(0)
-  VisibleTeams        Team[] @relation("PublicPermLevel")
+  VisibleSpaces        Space[] @relation("PublicPermLevel")
   PermissionedUsers   User[] @relation("PermissionLevel")
 }
 
@@ -39,8 +39,8 @@ model User {
   UserAuthoredTickets      Ticket[]         @relation("AuthoredTickets")
   UserAssignedTickets      Ticket[]         @relation("AssignedTickets")
   UserSession              Session[]        @relation("UserSession")
-  UserTeams                Team[]           @relation("TeamMembers")
-  OrganizedTeams           Team[]           @relation("TeamOrganizers")
+  UserSpaces                Space[]           @relation("SpaceMembers")
+  OrganizedSpaces           Space[]           @relation("SpaceOrganizers")
 
   @@index([CurrentPermissionLevelId])
 }
@@ -66,18 +66,18 @@ model Ticket {
   TicketTitle           String       @default("ticket title")
   TicketBody            String       @default("Ticket description")
   TicketCreationTime    DateTime     @default(now())
-  TicketTeamId          Int
+  TicketSpaceId          Int
   AuthorUser            User         @relation("AuthoredTickets", fields: [AuthorUserId], references: [UserId])
   CurrentAssignedUser   User?        @relation("AssignedTickets", fields: [CurrentAssignedUserId], references: [UserId])
   TicketStatus          TicketStatus @relation("TicketStatus", fields: [CurrentTicketStatusId], references: [TicketStatusId])
   TicketType            TicketType   @relation("TicketType", fields: [CurrentTicketTypeId], references: [TicketTypeId])
-  Team                  Team         @relation("TeamTickets", fields: [TicketTeamId], references: [TeamId])
+  Space                  Space         @relation("SpaceTickets", fields: [TicketSpaceId], references: [SpaceId])
 
   @@index([AuthorUserId])
   @@index([CurrentAssignedUserId])
   @@index([CurrentTicketTypeId])
   @@index([CurrentTicketStatusId])
-  @@index([TicketTeamId])
+  @@index([TicketSpaceId])
 }
 
 model Session {
@@ -89,20 +89,20 @@ model Session {
   @@index([SessionedUserId])
 }
 
-model TeamMembers {
+model SpaceMembers {
   A Int
   B Int
 
-  @@unique([A, B], map: "_TeamMembers_AB_unique")
-  @@index([B], map: "_TeamMembers_B_index")
-  @@map("_TeamMembers")
+  @@unique([A, B], map: "_SpaceMembers_AB_unique")
+  @@index([B], map: "_SpaceMembers_B_index")
+  @@map("_SpaceMembers")
 }
 
-model TeamOrganizers {
+model SpaceOrganizers {
   A Int
   B Int
 
-  @@unique([A, B], map: "_TeamOrganizers_AB_unique")
-  @@index([B], map: "_TeamOrganizers_B_index")
-  @@map("_TeamOrganizers")
+  @@unique([A, B], map: "_SpaceOrganizers_AB_unique")
+  @@index([B], map: "_SpaceOrganizers_B_index")
+  @@map("_SpaceOrganizers")
 }
