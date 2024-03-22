@@ -2,7 +2,7 @@ import {prisma} from "./prisma.js"
 import { generateResponse } from "../generate.js"
 import { fail } from "@sveltejs/kit"
 
-import { User, Session } from "$lib/types.js"
+import { User, Session, Space } from "$lib/types.js"
 
 
 
@@ -27,21 +27,15 @@ export function generateParsableResponse(code: number, message: string, contentT
 }
 
 
-export async function getSpaces(
+export async function getSpace(
 
     SpaceName?: string, 
-    SpaceId?: string,
-    SpaceOrganizers?: string[],
-    SpaceMembers?: string[],
-    PublicPermLevel?: number
+    SpaceId?: string
 
-    ): Promise< User | Error >{
+    ): Promise< Space | Error >{
     const parameter_dict = {
         "SpaceName": SpaceName,
         "SpaceId": SpaceId,
-        "SpaceOrganizers": SpaceOrganizers,
-        "SpaceMembers": SpaceMembers,
-        "PublicPermLevel": PublicPermLevel
     }
 
     const present_parameter_dict = parameter_dict
@@ -67,25 +61,11 @@ export async function getSpaces(
 
 
     try {
-
-
-        if (Object.keys(present_parameter_dict).indexOf("SpaceId") > -1){
-
-            var user = await prisma.space.findFirstOrThrow(
+            var space = await prisma.space.findFirstOrThrow(
                 {
                     where: present_parameter_dict
                 }
                 )
-            }
-        else {
-
-            var user = await prisma.space.findMany(
-                {
-                    where: present_parameter_dict
-                }
-                )
-
-        }
     } catch(error){
         console.error('errors',error)
         const responseString = generateParsableResponse(500, "Server error while attempting to find user", "text")
@@ -93,5 +73,38 @@ export async function getSpaces(
     }
 
 
-    return user
+    return space
+}
+
+
+
+export async function getSpaces(
+    PublicPermLevel: number,
+
+    ): Promise< Space[] | Error >{
+
+    // console.log(await prisma.space.findMany())
+
+    const present_parameter_dict = {"PublicPermLevel": {PermissionLevel: PublicPermLevel}}
+
+
+    try {
+
+        var spaces = await prisma.space.findMany()
+
+        // var spaces = await prisma.space.findMany(
+        //     {
+        //         where: present_parameter_dict
+        //     }
+        //     )
+
+        console.log('spaces found in spaces.ts', spaces)
+    } catch(error){
+        console.error('errors',error)
+        const responseString = generateParsableResponse(500, "Server error while attempting to find user", "text")
+        return new Error(responseString)
+    }
+
+
+    return spaces
 }

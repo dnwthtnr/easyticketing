@@ -33,7 +33,7 @@ export const actions =  {
         } catch(error) {
             return fail(500)
         }
-        if (typeof registrationResult == typeof Error()){
+        if (registrationResult == Error()){
             var errorResponse = JSON.parse(registrationResult.message)
             console.log('eRRRR', registrationResult.message)
 

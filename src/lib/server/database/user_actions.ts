@@ -180,7 +180,8 @@ export async function getUserSession(UserId: number): Promise<Session | null>{
 
     const session = await prisma.session.findMany(
         {where: {
-            sessionedUser: {UserId: UserId} }
+            sessionedUser: {UserId: UserId} 
+        }
         }
     )
 
