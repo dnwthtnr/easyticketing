@@ -16,8 +16,9 @@
 
 
     import {getSavedUserSession, getPersistentCookie} from "./cookie.js"
-
-
+    
+    import LoginButton from "./elements/loginbutton.svelte"
+    import RegisterButton from "./elements/registerbutton.svelte"
 
 
 
@@ -28,6 +29,11 @@
 
 
 <h1>Welcome to easy ticketing home page! Sign in or request to sign up</h1>
+
+<div>
+    <LoginButton/>
+    <RegisterButton/>
+</div>
 
 
 

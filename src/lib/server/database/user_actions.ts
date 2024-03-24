@@ -28,21 +28,42 @@ export function generateParsableResponse(code: number, message: string, contentT
 
 
 
-export async function RegisterUser(UserEmail: string, password: string, permission_level: 0): Promise<void> {
+export async function RegisterUser(UserEmail: string, password: string, userName: string, permission_level: 0): Promise<void | Error> {
+
+    try {
+        var existingUser = await GetUser(UserEmail)
+    } catch(error) {
+        console.log('errr',error)
+        fail(500)
+
+    }
+
+    console.log('user',existingUser)
+
+    if (typeof existingUser != typeof Error()) {
+        //user exists
+        const responseString = generateParsableResponse(400, 'Account already exists with given email.', "application")
+        console.log('errorrrr')
+        return new Error(responseString)
+
+    }
 
     // const hashed_password = await bcrypt.hash(password, 12)
 
     // TODO: Integrate crypto or some other hasing lib -- bcrypt createds errors due to it's dependencies not being std lib
     const hashed_password = password
 
+    console.log('1')
+
     var permission_level_dict = await prisma.permissionLevel.findFirst(
         {
             where: { PermissionLevel: permission_level }
         }
     )
+    console.log('2')
 
     // Set permisison level to lowest if given value returns undef
-    if (typeof permission_level_dict === "undefined"){
+    if (typeof permission_level_dict === null){
 
         console.log('Provided permission level: "${permission_level}" does not exist. Defaulting to permission level: "0"')
 
@@ -52,16 +73,25 @@ export async function RegisterUser(UserEmail: string, password: string, permissi
             }
         )
     }
+    console.log('3')
 
-    var _new_user = await prisma.user.create(
+    try{
+        var _new_user = await prisma.user.create(
         {
             data: {
                 UserEmail: UserEmail,
                 UserPassword: hashed_password,
-                CurrentPermissionLevel: {connect: {PermissionLevelId: permission_level_dict?.PermissionLevelId}}
+                CurrentPermissionLevel: {connect: {PermissionLevelId: permission_level_dict?.PermissionLevelId}},
+                UserName: userName
             }
         }
         )
+    } catch(error) {
+        console.error(error)
+        const responseString = generateParsableResponse(500, "Server error while attempting to create user", "text")
+        return new Error(responseString)
+
+    }
 
     console.log('Created entry for new user ${_new_user}')
     
@@ -69,10 +99,11 @@ export async function RegisterUser(UserEmail: string, password: string, permissi
     
 }
 
-export async function GetUser(UserEmail?: string, PermissionLevel?: number): Promise< User | Error >{
+export async function GetUser(UserEmail?: string, UserName?: string, PermissionLevel?: number): Promise< User | Error >{
     const parameter_dict = {
         "UserEmail": UserEmail,
-        "PermissionLevel": PermissionLevel,
+        "UserName": UserName,
+        "PermissionLevel": PermissionLevel
     }
 
     const present_parameter_dict = parameter_dict
@@ -94,6 +125,8 @@ export async function GetUser(UserEmail?: string, PermissionLevel?: number): Pro
         return new Error(responseString)
     }
 
+    console.log(await prisma.user.findFirst())
+
 
     try {
         var user = await prisma.user.findFirstOrThrow(
@@ -102,7 +135,7 @@ export async function GetUser(UserEmail?: string, PermissionLevel?: number): Pro
             }
             )
     } catch(error){
-        console.error(error)
+        console.error('errors',error)
         const responseString = generateParsableResponse(500, "Server error while attempting to find user", "text")
         return new Error(responseString)
     }
@@ -142,12 +175,13 @@ export async function GetUserFromCredential(UserEmail: string, UserPassword: str
     return user
 }
 
-export async function getUserSession(UserId: number){
+export async function getUserSession(UserId: number): Promise<Session | null>{
 
 
     const session = await prisma.session.findMany(
         {where: {
-            sessionedUser: {UserId: UserId} }
+            sessionedUser: {UserId: UserId} 
+        }
         }
     )
 
@@ -208,7 +242,7 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
     console.log(UserEmail, UserPassword)
 
     var user = await GetUserFromCredential(UserEmail, UserPassword)
-    if (typeof user == typeof Error()){
+    if (user === Error()){
         return <Error>user
     }
 
@@ -229,6 +263,8 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
 
 
     try{
+
+        console.log('UserId for session:', user.UserId)
         var newSession = await prisma.session.create(
         {
             data: {
@@ -248,11 +284,60 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
         const responseString = generateParsableResponse(500, "Server error while attempting to create user session.", "text")
         return new Error(responseString)
     }
+    
 
 
 
     console.log('serverses', newSession)
 
     return <Session>newSession
+
+}
+
+
+
+export async function killUserSession(SessionId: number): Promise< void | Error >{
+    // Gets user for session id
+
+    console.log('session id' + SessionId)
+
+    if (typeof SessionId != 'number'){
+        const responseString = generateParsableResponse(500, "Given session ID is not of type: number/Int", "text")
+        return new Error(responseString)
+    }
+
+    try {
+        var session = await prisma.session.findUniqueOrThrow({
+            where: {
+                sessionId: SessionId,
+            },
+            include: {
+                sessionedUser: true
+            }
+        })
+
+
+    } catch (error) {
+        console.error(error)
+
+        const responseString = generateParsableResponse(500, "Server error while attempting to find session", "text")
+        return new Error(responseString)
+    }
+
+
+
+    try {
+        var result = await prisma.session.delete({
+            where: {
+                sessionId: SessionId
+            }
+        })
+
+        console.log("Delete user session result:", result)
+    } catch(error) {
+        console.error(error)
+        const responseString = generateParsableResponse(500, "Server error while attempting to delete session", "text")
+        return new Error(responseString)
+    }
 
 }

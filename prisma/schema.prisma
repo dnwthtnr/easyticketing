@@ -1,131 +1,108 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
-  
 
-model Team{
-  TeamId Int @default(autoincrement()) @id
-
-  TeamOrganizers User[] @relation("TeamOrganizers")
-
-  TeamName String @db.Text
-  TeamDescription String @db.LongText
-
-  TeamMembers User[] @relation("TeamMembers")
-
-
-  TeamTickets Ticket[] @relation("TeamTickets")
-
-  PublicPermLevel PermissionLevel @relation(name: "PublicPermLevel", fields: [PublicPermLevelId], references: [PermissionLevelId])
+model Space {
+  SpaceId            Int             @id @default(autoincrement())
+  SpaceName          String          @db.Text
+  SpaceDescription   String          @db.LongText
   PublicPermLevelId Int
-
-
+  SpaceOrganizers    User[]          @relation("SpaceOrganizers")
+  SpaceMembers       User[]          @relation("SpaceMembers")
+  SpaceTickets       Ticket[]        @relation("SpaceTickets")
+  PublicPermLevel   PermissionLevel @relation("PublicPermLevel", fields: [PublicPermLevelId], references: [PermissionLevelId])
 
   @@index([PublicPermLevelId])
 }
 
-
-
-
-model PermissionLevel{
-  PermissionLevelId Int @default(autoincrement()) @id
+model PermissionLevel {
+  PermissionLevelId   Int    @id @default(autoincrement())
   PermissionLevelName String @db.Text
-  PermissionLevel Int @db.Int @default(0)
-
-  VisibleTeams Team[] @relation("PublicPermLevel")
-
-  PermissionedUsers User[] @relation("PermissionLevel")
+  PermissionLevel     Int    @default(0)
+  VisibleSpaces        Space[] @relation("PublicPermLevel")
+  PermissionedUsers   User[] @relation("PermissionLevel")
 }
 
-model User{
-  UserId Int @default(autoincrement()) @id
-  UserEmail String  @db.VarChar(600)
-  UserPassword String @db.Text
-
-  UserName String @db.MediumText
-
-  CurrentPermissionLevel PermissionLevel? @relation(name: "PermissionLevel", fields: [CurrentPermissionLevelId], references: [PermissionLevelId])
+model User {
+  UserId                   Int              @id @default(autoincrement())
+  UserEmail                String           @db.VarChar(600) @unique
+  UserPassword             String           @db.Text 
+  UserName                 String           @db.MediumText
   CurrentPermissionLevelId Int
-
-  UserAuthoredTickets Ticket[] @relation("AuthoredTickets")
-
-  UserAssignedTickets Ticket[] @relation("AssignedTickets")
-
-  UserSession Session[] @relation("UserSession")
-
-  UserTeams Team[] @relation("TeamMembers")
-  OrganizedTeams  Team[] @relation("TeamOrganizers")
+  CurrentPermissionLevel   PermissionLevel? @relation("PermissionLevel", fields: [CurrentPermissionLevelId], references: [PermissionLevelId])
+  UserAuthoredTickets      Ticket[]         @relation("AuthoredTickets")
+  UserAssignedTickets      Ticket[]         @relation("AssignedTickets")
+  UserSession              Session[]        @relation("UserSession")
+  UserSpaces                Space[]           @relation("SpaceMembers")
+  OrganizedSpaces           Space[]           @relation("SpaceOrganizers")
 
   @@index([CurrentPermissionLevelId])
 }
 
-
-model TicketType{
-  TicketTypeId Int @default(autoincrement()) @id
-  TicketTypeName String @db.Text
-
-  TicketsOfType Ticket[] @relation("TicketType")
+model TicketType {
+  TicketTypeId   Int      @id @default(autoincrement())
+  TicketTypeName String   @db.Text
+  TicketsOfType  Ticket[] @relation("TicketType")
 }
 
-
-model TicketStatus{
-  TicketStatusId Int @default(autoincrement()) @id
-  TicketStatusName String @db.Text
-
-  TicketsOfStatus Ticket[] @relation("TicketStatus")
+model TicketStatus {
+  TicketStatusId   Int      @id @default(autoincrement())
+  TicketStatusName String   @db.Text
+  TicketsOfStatus  Ticket[] @relation("TicketStatus")
 }
 
-model Ticket{
-
-  ticketId Int @default(autoincrement()) @id
-
-  
-  AuthorUser User @relation(name: "AuthoredTickets", fields: [AuthorUserId], references: [UserId])
-  AuthorUserId Int @unique
-
-  CurrentAssignedUser User? @relation(name: "AssignedTickets", fields: [CurrentAssignedUserId], references: [UserId])
-  CurrentAssignedUserId Int @unique
-
-  TicketStatus TicketStatus @relation(name: "TicketStatus", fields: [CurrentTicketStatusId], references: [TicketStatusId])
+model Ticket {
+  ticketId              Int          @id @default(autoincrement())
+  AuthorUserId          Int          @unique
+  CurrentAssignedUserId Int          @unique
   CurrentTicketStatusId Int
-
-  TicketType TicketType @relation(name: "TicketType", fields: [CurrentTicketTypeId], references: [TicketTypeId])
-  CurrentTicketTypeId Int 
-
-  TicketTitle String @default("ticket title")
-
-  TicketBody String @default("Ticket description")
-
-  TicketCreationTime DateTime @default(now())
-
-  Team Team @relation(name: "TeamTickets", fields: [TicketTeamId], references: [TeamId])
-  TicketTeamId Int
-
+  CurrentTicketTypeId   Int
+  TicketTitle           String       @default("ticket title")
+  TicketBody            String       @default("Ticket description")
+  TicketCreationTime    DateTime     @default(now())
+  TicketSpaceId          Int
+  AuthorUser            User         @relation("AuthoredTickets", fields: [AuthorUserId], references: [UserId])
+  CurrentAssignedUser   User?        @relation("AssignedTickets", fields: [CurrentAssignedUserId], references: [UserId])
+  TicketStatus          TicketStatus @relation("TicketStatus", fields: [CurrentTicketStatusId], references: [TicketStatusId])
+  TicketType            TicketType   @relation("TicketType", fields: [CurrentTicketTypeId], references: [TicketTypeId])
+  Space                  Space         @relation("SpaceTickets", fields: [TicketSpaceId], references: [SpaceId])
 
   @@index([AuthorUserId])
   @@index([CurrentAssignedUserId])
   @@index([CurrentTicketTypeId])
   @@index([CurrentTicketStatusId])
-  @@index([TicketTeamId])
+  @@index([TicketSpaceId])
 }
 
-
-model Session{
-  sessionId Int @default(autoincrement()) @id
-
-  SessionToken String @default("")
-
-  sessionedUser User @relation(name: "UserSession", fields: [SessionedUserId], references: [UserId])
-  SessionedUserId Int @unique
+model Session {
+  sessionId       Int    @id @default(autoincrement())
+  SessionToken    String @default("")
+  SessionedUserId Int    
+  sessionedUser   User   @relation("UserSession", fields: [SessionedUserId], references: [UserId])
 
   @@index([SessionedUserId])
+}
+
+model SpaceMembers {
+  A Int
+  B Int
+
+  @@unique([A, B], map: "_SpaceMembers_AB_unique")
+  @@index([B], map: "_SpaceMembers_B_index")
+  @@map("_SpaceMembers")
+}
+
+model SpaceOrganizers {
+  A Int
+  B Int
+
+  @@unique([A, B], map: "_SpaceOrganizers_AB_unique")
+  @@index([B], map: "_SpaceOrganizers_B_index")
+  @@map("_SpaceOrganizers")
 }

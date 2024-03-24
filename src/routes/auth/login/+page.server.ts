@@ -17,6 +17,7 @@ export const actions =  {
 
         const email = String(formData.get("EmailInput"))
         const password = String(formData.get("PasswordInput"))
+        const storeSession = Boolean(formData.get("StoreSession"))
 
 
         try{
@@ -24,14 +25,27 @@ export const actions =  {
         } catch(error) {
             return fail(500)
         }
-        if (typeof userSession == typeof Error()){
+        if (userSession == Error()){
+            console.log(userSession, typeof userSession, typeof Error())
             var errorResponse = JSON.parse(userSession.message)
-            console.log('eRRRR',userSession.message)
 
             errorResponse.message.error = true
 
             return fail(errorResponse.code, errorResponse.message)
             // display error to signify incorrect email or password
+        }
+
+
+        var cookieOptions = {
+            path: '/',
+            sameSite: 'lax'
+        }
+        if (storeSession == true){
+            var cookieOptions = {
+                path: '/',
+                sameSite: 'lax',
+                maxAge: 31536000
+            }
         }
 
         
@@ -41,10 +55,7 @@ export const actions =  {
         cookies.set(
             SessionCookieKey, 
             storableUserSession,
-            {
-                path: '/',
-                sameSite: 'lax'
-            }
+            cookieOptions
             )
 
         return {
