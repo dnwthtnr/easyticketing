@@ -20,13 +20,15 @@ export const actions =  {
 
 
         try{
+            console.log('Attempting user login.')
             var userSession = await loginUser(email, password)
+            console.log("User login cookie result:", userSession)
         } catch(error) {
             return fail(500)
         }
-        if (typeof userSession == typeof Error()){
-            var errorResponse = JSON.parse(userSession.message)
+        if ( userSession ==  Error()){
             console.log('eRRRR',userSession.message)
+            var errorResponse = JSON.parse(userSession.message)
 
             errorResponse.message.error = true
 

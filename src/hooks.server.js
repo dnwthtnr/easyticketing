@@ -5,6 +5,9 @@ import { getSessionedUser } from '$lib/server/database/user_actions';
 export async function handle({event, resolve}){
     const sessionCookie = event.cookies.get(SessionCookieKey);
 
+
+    console.log("Session Cookie", sessionCookie)
+
     event.locals.user = {} // set null in case of failed session validations
     const loginPath = '/auth/login'
     const nonProtectedRoutes = ["/", loginPath]
@@ -28,6 +31,7 @@ export async function handle({event, resolve}){
     // Get object from json format string
     try{
         var sessionCookieObject = await JSON.parse(sessionCookie)
+        console.log("Session Cookie Object:", sessionCookieObject)
     } catch(error) {
         console.error("Error parsing session cookie redirecting")
         throw redirect(302, "/auth/login")
@@ -42,12 +46,14 @@ export async function handle({event, resolve}){
 
     // get user from session cookie
     try {
+        console.log("Looking for existing session cookie")
         var sessionedUser = await getSessionedUser(sessionCookieObject.sessionId)
+        console.log("Existing session cookie found... Readout:", sessionedUser)
     } catch(error) {
         console.error("Error querying user from session id. redirecting")
         throw redirect(302, "/auth/login")
     }
-    if (typeof sessionedUser == typeof Error()){
+    if (sessionedUser == Error()){
         console.error("Error parsing session cookie redirecting. Error:", sessionedUser.message)
         throw redirect(302, "/auth/login")
     }
@@ -55,7 +61,8 @@ export async function handle({event, resolve}){
 
 
     // redirect if user is trying to log in or go to non-member home page
-    if (nonProtectedRoutes.indexOf(event.url.pathname) <= -1){
+    if (nonProtectedRoutes.indexOf(event.url.pathname) > -1){
+        console.log("Redirecting to landing page")
         throw redirect(302, "/landing")
     }
 

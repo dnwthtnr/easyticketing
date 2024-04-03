@@ -163,7 +163,8 @@ export async function getUserSession(UserId: number){
 export async function getSessionedUser(SessionId: number): Promise< User | Error >{
     // Gets user for session id
 
-    console.log('session id' + SessionId)
+    console.log('Getting user for session:', SessionId)
+    console.log("Given Session ID is of type:", typeof SessionId, typeof 10)
 
     if (typeof SessionId != 'number'){
         const responseString = generateParsableResponse(500, "Given session ID is not of type: number/Int", "text")
@@ -207,8 +208,19 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
 
     console.log(UserEmail, UserPassword)
 
-    var user = await GetUserFromCredential(UserEmail, UserPassword)
-    if (typeof user == typeof Error()){
+    
+    try {
+        console.log("Getting user from given credentials")
+        var user = await GetUserFromCredential(UserEmail, UserPassword)
+    } catch(error){
+        console.error(error)
+        const responseString = generateParsableResponse(500, "Server error while attempting to find user from credential", "text")
+        return new Error(responseString)
+
+    }
+
+    if (user == Error()){
+        console.error("User retrun from credentials is of 'Error' type")
         return <Error>user
     }
 
@@ -250,8 +262,8 @@ export async function loginUser(UserEmail: string, UserPassword: string): Promis
     }
 
 
-
-    console.log('serverses', newSession)
+    newSession.sessionId
+    console.log('New Session Created:', newSession)
 
     return <Session>newSession
 

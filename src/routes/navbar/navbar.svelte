@@ -12,9 +12,9 @@ const navigationItems = {
         path: "../"
     },
     "Timeline": {
-        path: "../ticket"
+        path: "../tickets"
     },
-    "Teams": {
+    "Spaces": {
         path: ""
     },
     "Help": {
@@ -32,17 +32,29 @@ const navigationItems = {
 
 
 <nav class="navbar">
-    <ul>
-        {#each Object.entries(navigationItems) as [item, itemDict]}
-            <li>
-                <NavigableText hrefText={itemDict.path} displayText={item}/>
-                <!-- <a href={itemDict.path}>{item}</a> -->
-            </li>
-        {/each}
-    </ul>
+    <div class="links">
+        <ul>
+            {#each Object.entries(navigationItems) as [item, itemDict]}
+                <li>
+                    <NavigableText hrefText={itemDict.path} displayText={item}/>
+                    <!-- <a href={itemDict.path}>{item}</a> -->
+                </li>
+            {/each}
+        </ul>
+    </div>
+    
+    <div class="userspace">
+        <h1>USER</h1>
+    </div>
+
 </nav>
 
 <style>
+    .links {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
     .navbar{
         display: flex;
         background-color: #4A6FA5;

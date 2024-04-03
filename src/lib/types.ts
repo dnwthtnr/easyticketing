@@ -48,14 +48,14 @@ export class Ticket {
 
 }
 
-export class Team {
-    TeamId!: number
+export class Space {
+    SpaceId!: number
 
-    TeamName!: string
-    TeamDescription!: string
-    TeamMembers?: User[]
+    SpaceName!: string
+    SpaceDescription!: string
+    SpaceMembers?: User[]
 
-    TeamTickets?: Ticket[]
+    SpaceTickets?: Ticket[]
     PublicPermLevel?: object
 
     PublicPermLevelId!: number
