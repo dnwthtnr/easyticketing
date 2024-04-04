@@ -54,6 +54,10 @@ export class Space {
     SpaceName!: string
     SpaceDescription!: string
     SpaceMembers?: User[]
+<<<<<<< HEAD
+=======
+    SpaceOrganizers?: User[]
+>>>>>>> 470890bd2c13d62e40c3ae579bdb839939dbc6e2
 
     SpaceTickets?: Ticket[]
     PublicPermLevel?: object

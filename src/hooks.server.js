@@ -10,14 +10,17 @@ export async function handle({event, resolve}){
 
     event.locals.user = {} // set null in case of failed session validations
     const loginPath = '/auth/login'
-    const nonProtectedRoutes = ["/", loginPath]
+    const nonProtectedRoutes = ["/", loginPath, "/auth/register"]
+
+    console.log('Sesssion cookie:', sessionCookie)
 
 
 // #region Validate User Session
 
 
     // Check if no cookie present and redirect if needed
-    if (typeof sessionCookie === "undefined" || sessionCookie == null){
+    if (sessionCookie == null){
+        console.log("No cookie present...Path:", event.url.pathname)
 
         if (nonProtectedRoutes.indexOf(event.url.pathname) <= -1){
             throw redirect(302, loginPath)
@@ -31,7 +34,11 @@ export async function handle({event, resolve}){
     // Get object from json format string
     try{
         var sessionCookieObject = await JSON.parse(sessionCookie)
+<<<<<<< HEAD
         console.log("Session Cookie Object:", sessionCookieObject)
+=======
+        console.log("Parsed session cookie. Result:", sessionCookieObject)
+>>>>>>> 470890bd2c13d62e40c3ae579bdb839939dbc6e2
     } catch(error) {
         console.error("Error parsing session cookie redirecting")
         throw redirect(302, "/auth/login")
@@ -40,7 +47,6 @@ export async function handle({event, resolve}){
         console.error("Present session cookie has a size of 0. Deleting present cookie")
         event.cookies.delete(SessionCookieKey, {path: '/'})
 
-
         throw redirect(302, "/auth/login")
     }
 
@@ -48,7 +54,11 @@ export async function handle({event, resolve}){
     try {
         console.log("Looking for existing session cookie")
         var sessionedUser = await getSessionedUser(sessionCookieObject.sessionId)
+<<<<<<< HEAD
         console.log("Existing session cookie found... Readout:", sessionedUser)
+=======
+        console.log("Getting user from session:", sessionedUser)
+>>>>>>> 470890bd2c13d62e40c3ae579bdb839939dbc6e2
     } catch(error) {
         console.error("Error querying user from session id. redirecting")
         throw redirect(302, "/auth/login")
@@ -62,7 +72,10 @@ export async function handle({event, resolve}){
 
     // redirect if user is trying to log in or go to non-member home page
     if (nonProtectedRoutes.indexOf(event.url.pathname) > -1){
+<<<<<<< HEAD
         console.log("Redirecting to landing page")
+=======
+>>>>>>> 470890bd2c13d62e40c3ae579bdb839939dbc6e2
         throw redirect(302, "/landing")
     }
 
