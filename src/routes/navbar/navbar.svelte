@@ -11,16 +11,11 @@ const navigationItems = {
     "Home": {
         path: "../"
     },
-<<<<<<< HEAD
     "Timeline": {
         path: "../tickets"
     },
     "Spaces": {
-        path: ""
-=======
-    "Spaces": {
         path: "../spaces"
->>>>>>> 470890bd2c13d62e40c3ae579bdb839939dbc6e2
     },
     "Help": {
         path: "../help"
