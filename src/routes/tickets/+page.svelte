@@ -15,7 +15,7 @@ interface ticket {
     TicketBody: string
 }
 
-let tickets: ticket[] = [
+let todotickets: ticket[] = [
     {
         id: 1,
         AuthorUser: "User",
@@ -56,7 +56,52 @@ let tickets: ticket[] = [
     }
 ]
 
+let doingtickets: ticket[] = [
+    {
+        id: 11,
+        AuthorUser: "User",
+        CurrentAssignedUser: "me",
+        TicketStatus: "Todo",
+        TicketType: "Issue",
+        TicketTitle: "Ticket11",
+        TicketBody: "this is a ticket"
+    },
 
+    {
+        id: 12,
+        AuthorUser: "User",
+        CurrentAssignedUser: "me",
+        TicketStatus: "inProgress",
+        TicketType: "Issue",
+        TicketTitle: "Ticket12",
+        TicketBody: "thisvalid  is a ticket"
+    },
+    {
+        id: 13,
+        AuthorUser: "User",
+        CurrentAssignedUser: "me",
+        TicketStatus: "inProgress",
+        TicketType: "Issue",
+        TicketTitle: "Ticket13",
+        TicketBody: "this is a ticket"
+    },
+
+    {
+        id: 14,
+        AuthorUser: "User",
+        CurrentAssignedUser: "me",
+        TicketStatus: "inProgress",
+        TicketType: "Issue",
+        TicketTitle: "Ticket14",
+        TicketBody: "thisvalid  is a ticket"
+    }
+]
+
+let tickets = [
+    todotickets,
+    doingtickets,
+    []
+]
 
 let todos: ticket[] = []
 let doings: ticket[] = []
@@ -149,18 +194,60 @@ function handleDndEvent(event: CustomEvent<DndEvent<ticket>>){
 }
 
 
+
+function ticketable(node, ticketData){
+    
+    console.log('draggablecall', node, ticketData)
+
+    node.header = 'header'
+
+
+    node.draggable = true
+    node.style.cursor = 'grab'
+    node.animate = 'flip'
+}
+
+
+
 </script>
 
 
 
-<div class="container h-full mx-auto flex justify-center items-center">
+<div class="tickettimeline">
+
+    {#each tickets as ticketStatus}
+
     
-    <section
+    <ul>
+
+        <li class='column' style="">
+            
+            
+            {#if ticketStatus.length > 0}
+            
+            {#each ticketStatus as ticket}
+            <ul class='tickets'>
+                <li class="ticket" use:ticketable={tickets}>
+                    <h1>
+                        {ticket.TicketTitle}
+                    </h1>
+                </li>
+            </ul>
+            
+            {/each}
+            {:else}
+            
+            <h1>No Tickets.....</h1>
+            
+            {/if}        
+        </li>
+    </ul>
+        
+    {/each}
+    
+    <!-- <section
     class="TODO" 
     id="Todo"
-    use:dndzone="{{items:todos, flipDurationMs: flipDuration}}"
-    on:finalize="{handleDndEvent}"
-    on:consider="{handleDndEvent}"
     >
         {#each todos as ticket (ticket.id)}
             <div class="card card-hover" animate:flip="{{duration: flipDuration}}" >
@@ -174,9 +261,6 @@ function handleDndEvent(event: CustomEvent<DndEvent<ticket>>){
     <section
     class="DOING" 
     id="inProgress"
-    use:dndzone="{{items:doings, flipDurationMs: flipDuration}}"
-    on:finalize="{handleDndEvent}"
-    on:consider="{handleDndEvent}"
     >
         {#each doings as ticket (ticket.id)}
             <div class="card card-hover" animate:flip="{{duration: flipDuration}}" >
@@ -185,8 +269,21 @@ function handleDndEvent(event: CustomEvent<DndEvent<ticket>>){
                 </header>
             </div>
         {/each}
-    </section>
+    </section> -->
 
 
 
 </div>
+
+
+<style>
+    ul{
+        list-style: none;
+    }
+
+    .column{
+        outline-style: solid;
+    }
+
+
+</style>
