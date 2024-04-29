@@ -30,7 +30,7 @@ let todotickets: ticket[] = [
         id: 2,
         AuthorUser: "User",
         CurrentAssignedUser: "me",
-        TicketStatus: "inProgress",
+        TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket2",
         TicketBody: "thisvalid  is a ticket"
@@ -39,7 +39,7 @@ let todotickets: ticket[] = [
         id: 3,
         AuthorUser: "User",
         CurrentAssignedUser: "me",
-        TicketStatus: "inProgress",
+        TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket3",
         TicketBody: "this is a ticket"
@@ -49,7 +49,7 @@ let todotickets: ticket[] = [
         id: 4,
         AuthorUser: "User",
         CurrentAssignedUser: "me",
-        TicketStatus: "inProgress",
+        TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket4",
         TicketBody: "thisvalid  is a ticket"
@@ -61,7 +61,7 @@ let doingtickets: ticket[] = [
         id: 11,
         AuthorUser: "User",
         CurrentAssignedUser: "me",
-        TicketStatus: "Todo",
+        TicketStatus: "inProgress",
         TicketType: "Issue",
         TicketTitle: "Ticket11",
         TicketBody: "this is a ticket"
@@ -107,8 +107,8 @@ let todos: ticket[] = []
 let doings: ticket[] = []
 
 const statusListAssociations = {
-    "Todo": todos,
-    "inProgress": doings
+    "Todo": todotickets,
+    "inProgress": doingtickets
 }
 
 function sortTickets(tickets: ticket[], statusListRegistry: {}){
@@ -195,16 +195,154 @@ function handleDndEvent(event: CustomEvent<DndEvent<ticket>>){
 
 
 
-function ticketable(node, ticketData){
-    
-    console.log('draggablecall', node, ticketData)
+function getTicketFromId(id, ticketGroup?): ticket | void{
+    var ticketSearchList;
+    if (ticketGroup != undefined){
+        ticketSearchList = ticketGroup
+    }
+    else {
+        ticketSearchList = tickets
+    }
 
-    node.header = 'header'
+
+
+    for (let i=0; i<ticketSearchList.length; i++){
+        let item = ticketSearchList[i]
+        if (item.constructor === Array){
+            var ticketResult = getTicketFromId(id, item)
+            if (ticketResult === undefined){
+                continue
+            } 
+            else {
+                return ticketResult
+            }
+        }
+
+
+        // add validation for ticket type
+
+
+        if (item.constructor !== Object){continue}
+        
+        if (item.id == id){
+            return item
+        }
+    
+    }
+
+}
+
+
+var KEY_ticketData = "ticketdata"
+
+function ticketable(node: HTMLElement, ticketData: Array<number | string>){
+
+    console.log(arguments)
+
+    console.log("ticketable called with params ticketData:", ticketData)
+
+
+    node.addEventListener("dragstart", (event) => {
+        console.log("Dragstart! Storing ticketData:", ticketData)
+
+        event.dataTransfer.setData(KEY_ticketData, JSON.stringify(ticketData))
+        event.dataTransfer.effectAllowed = "copyMove"
+
+        console.log(event.dataTransfer)
+    })
 
 
     node.draggable = true
     node.style.cursor = 'grab'
     node.animate = 'flip'
+}
+
+function droppableArea(node, targetList){
+    // add listener for drag events on html element
+    
+    node.addEventListener("dragexit", (event) => {event.preventDefault(); console.log("dragexit")})
+    node.addEventListener("dragover", (event) => {event.preventDefault(); console.log("dragover")})
+    node.addEventListener("dragenter", (event) => {event.preventDefault(); console.log("entered")})
+
+    node.addEventListener("drop", async (event) => {
+        event.preventDefault(); 
+        console.log(event, event.dataTransfer)
+        var ticketDataStringified = await event.dataTransfer.getData(KEY_ticketData)
+
+        console.log("Read and going to parse stringified ticket data:", ticketDataStringified)
+        
+        const ticketData = JSON.parse(ticketDataStringified)
+        const ticketId = ticketData[0]
+        const ticketStatus = ticketData[1]
+
+
+        if (ticketId.constructor !== Number){
+            console.warn("Ticket ID post parse is not number:", ticketId)
+        }
+
+        if (ticketStatus.constructor !== String){
+            console.warn("ticketStatus post parse is not string:", ticketStatus)
+        }
+
+        if (ticketStatus !in Object.keys(statusListAssociations)){
+            console.warn("ticketStatus does not exist in provided ticket statuses:", ticketStatus)
+        }        
+        
+        var ticket = getTicketFromId(ticketId)
+
+        if (ticket.constructor === null){
+            console.warn("Returned ticket from id:", ticketId, "is null")
+        }
+
+        console.debug("Ticket returned from id", ticket)
+
+
+        try {
+            var initialStatusList= statusListAssociations[ticketStatus]
+        } catch (error) {
+            console.warn("Encoutnered error while attempting to get status list for status:", ticketStatus, "(Full readout logged to debug)")
+            console.debug(error)
+        }
+
+
+        // console.log(ticketCurrentGroup, targetGroup)
+        
+        if (initialStatusList === targetList){console.log("Target status list and current status list are the same"); return}
+
+
+
+        try {
+            initialStatusList.splice(initialStatusList.indexOf(ticket), 1)
+        } catch (error) {
+            console.warn("Encoutnered error while attempting to remove ticket of id:", ticketId, "from lsit for status:", ticketStatus, "(Full readout logged to debug)")
+            console.debug(error)
+        }
+        // console.log("currentgrp", ticketCurrentGroup, "ticketgrp", targetGroup)
+
+
+
+        
+
+
+
+        try {
+            targetList.push(ticket)
+        } catch (error)  {
+            console.warn("Encoutnered error while attempting to add ticket of id:", ticketId, "to lsit for status:{TARGETLIST}", "(Full readout logged to debug)")
+            console.debug(error)
+        }
+
+        console.debug(targetList)
+
+        console.info("Redeclaring 'tickets' varaible to trigger update.")
+        tickets = tickets
+    })
+
+
+    
+    // from event get node 
+    
+    console.log(node)
 }
 
 
@@ -215,31 +353,35 @@ function ticketable(node, ticketData){
 
 <div class="tickettimeline">
 
-    {#each tickets as ticketStatus}
+    {#each Object.entries(statusListAssociations) as [ticketStatus, ticketGroup]}
+
+    <h3>{ticketStatus}</h3>
 
     
     <ul>
 
-        <li class='column' style="">
+        <li>
             
-            
-            {#if ticketStatus.length > 0}
-            
-            {#each ticketStatus as ticket}
-            <ul class='tickets'>
-                <li class="ticket" use:ticketable={tickets}>
-                    <h1>
-                        {ticket.TicketTitle}
-                    </h1>
-                </li>
-            </ul>
-            
-            {/each}
-            {:else}
-            
-            <h1>No Tickets.....</h1>
-            
-            {/if}        
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div use:droppableArea={ticketGroup}>
+                {#if ticketGroup.length > 0}
+
+                {#each ticketGroup as ticket}
+                <ul class='tickets'>
+                    <li class="ticket" use:ticketable={[ticket.id, ticket.TicketStatus]}>
+                        <h1>
+                            {ticket.TicketTitle}
+                        </h1>
+                    </li>
+                </ul>
+
+                {/each}
+                {:else}
+
+                <h1>No Tickets.....</h1>
+
+                {/if}
+            </div>        
         </li>
     </ul>
         
