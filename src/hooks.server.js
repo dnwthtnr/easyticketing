@@ -2,7 +2,16 @@ import { SessionCookieKey } from '$lib/constants'
 import { redirect } from '@sveltejs/kit';
 import { getSessionedUser } from '$lib/server/database/user_actions';
 
+let dev = true
+
+
 export async function handle({event, resolve}){
+
+    if(dev == true){
+        const response = resolve(event)
+        return response
+    }
+
     const sessionCookie = event.cookies.get(SessionCookieKey);
 
 

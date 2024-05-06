@@ -3,6 +3,9 @@
     import {flip} from "svelte/animate"
 
 
+    import Ticket from "./ticket.svelte";
+
+
 const flipDuration = 175
 
 interface ticket {
@@ -23,7 +26,7 @@ let todotickets: ticket[] = [
         TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket1",
-        TicketBody: "this is a ticket"
+        TicketBody: "this is a ticket 1"
     },
 
     {
@@ -33,7 +36,7 @@ let todotickets: ticket[] = [
         TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket2",
-        TicketBody: "thisvalid  is a ticket"
+        TicketBody: "thisvalid  is a ticket 2"
     },
     {
         id: 3,
@@ -42,7 +45,7 @@ let todotickets: ticket[] = [
         TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket3",
-        TicketBody: "this is a ticket"
+        TicketBody: "this is a ticket 3"
     },
 
     {
@@ -52,7 +55,7 @@ let todotickets: ticket[] = [
         TicketStatus: "Todo",
         TicketType: "Issue",
         TicketTitle: "Ticket4",
-        TicketBody: "thisvalid  is a ticket"
+        TicketBody: "thisvalid  is a ticket 4"
     }
 ]
 
@@ -64,7 +67,7 @@ let doingtickets: ticket[] = [
         TicketStatus: "inProgress",
         TicketType: "Issue",
         TicketTitle: "Ticket11",
-        TicketBody: "this is a ticket"
+        TicketBody: "this is a ticket 11"
     },
 
     {
@@ -74,7 +77,7 @@ let doingtickets: ticket[] = [
         TicketStatus: "inProgress",
         TicketType: "Issue",
         TicketTitle: "Ticket12",
-        TicketBody: "thisvalid  is a ticket"
+        TicketBody: "thisvalid  is a ticket 12"
     },
     {
         id: 13,
@@ -83,7 +86,7 @@ let doingtickets: ticket[] = [
         TicketStatus: "inProgress",
         TicketType: "Issue",
         TicketTitle: "Ticket13",
-        TicketBody: "this is a ticket"
+        TicketBody: "this is a ticket 13"
     },
 
     {
@@ -93,7 +96,7 @@ let doingtickets: ticket[] = [
         TicketStatus: "inProgress",
         TicketType: "Issue",
         TicketTitle: "Ticket14",
-        TicketBody: "thisvalid  is a ticket"
+        TicketBody: "thisvalid  is a ticket 14"
     }
 ]
 
@@ -106,7 +109,7 @@ let tickets = [
 let todos: ticket[] = []
 let doings: ticket[] = []
 
-const statusListAssociations = {
+let statusListRegistrar = {
     "Todo": todotickets,
     "inProgress": doingtickets
 }
@@ -135,7 +138,7 @@ function sortTickets(tickets: ticket[], statusListRegistry: {}){
     }
 }
 
-sortTickets(tickets, statusListAssociations)
+sortTickets(tickets, statusListRegistrar)
 
 console.log('lists now sroted', todos, doings)
 
@@ -165,7 +168,7 @@ function handleDndEvent(event: CustomEvent<DndEvent<ticket>>){
     const selectedID = event.detail.info.id
     const targetZone = event.target
 
-    const targetStatusList = statusListAssociations[targetZone.id]
+    const targetStatusList = statusListRegistrar[targetZone.id]
 
 
     // get ticket with id: do this through a request or wasm 
@@ -180,7 +183,7 @@ function handleDndEvent(event: CustomEvent<DndEvent<ticket>>){
     }
 
     const currentTicketStatus = selectedTicket.TicketStatus
-    const currentStatusList = statusListAssociations[currentTicketStatus]
+    const currentStatusList = statusListRegistrar[currentTicketStatus]
     currentStatusList.splice(currentStatusList.indexOf(selectedTicket), 1)
 
     targetStatusList.push(selectedTicket)
@@ -257,8 +260,13 @@ function ticketable(node: HTMLElement, ticketData: Array<number | string>){
     node.animate = 'flip'
 }
 
-function droppableArea(node, targetList){
+function droppableArea(node, registrarKey){
     // add listener for drag events on html element
+    console.log("key",registrarKey)
+    var targetList = statusListRegistrar[registrarKey]
+    console.log("asd",targetList)
+
+    function updateRegisteredList(registrarKey, updatedList){statusListRegistrar[registrarKey] = updatedList}
     
     node.addEventListener("dragexit", (event) => {event.preventDefault(); console.log("dragexit")})
     node.addEventListener("dragover", (event) => {event.preventDefault(); console.log("dragover")})
@@ -284,11 +292,15 @@ function droppableArea(node, targetList){
             console.warn("ticketStatus post parse is not string:", ticketStatus)
         }
 
-        if (ticketStatus !in Object.keys(statusListAssociations)){
+        if (ticketStatus !in Object.keys(statusListRegistrar)){
             console.warn("ticketStatus does not exist in provided ticket statuses:", ticketStatus)
         }        
         
+        
+        
         var ticket = getTicketFromId(ticketId)
+
+
 
         if (ticket.constructor === null){
             console.warn("Returned ticket from id:", ticketId, "is null")
@@ -298,7 +310,7 @@ function droppableArea(node, targetList){
 
 
         try {
-            var initialStatusList= statusListAssociations[ticketStatus]
+            var initialStatusList= statusListRegistrar[ticketStatus]
         } catch (error) {
             console.warn("Encoutnered error while attempting to get status list for status:", ticketStatus, "(Full readout logged to debug)")
             console.debug(error)
@@ -309,10 +321,19 @@ function droppableArea(node, targetList){
         
         if (initialStatusList === targetList){console.log("Target status list and current status list are the same"); return}
 
-
+        console.log("sdsdf",initialStatusList.length)
 
         try {
-            initialStatusList.splice(initialStatusList.indexOf(ticket), 1)
+
+            let ticketIndex = initialStatusList.indexOf(ticket)
+            console.log(ticketIndex)
+
+            const deleted = initialStatusList.splice(ticketIndex, 1)
+            console.log("DELETED ID:", deleted[0].id, "FROM LIST:", ticketStatus)
+
+            console.log("INIT STATUS LIST: ", initialStatusList)
+
+
         } catch (error) {
             console.warn("Encoutnered error while attempting to remove ticket of id:", ticketId, "from lsit for status:", ticketStatus, "(Full readout logged to debug)")
             console.debug(error)
@@ -323,6 +344,7 @@ function droppableArea(node, targetList){
 
         
 
+        console.debug(targetList.length)
 
 
         try {
@@ -332,10 +354,27 @@ function droppableArea(node, targetList){
             console.debug(error)
         }
 
-        console.debug(targetList)
+
+        statusListRegistrar.inProgress[1] = statusListRegistrar.inProgress[1]
+
+
+
+        // update ticket object 
+        ticket.TicketStatus = registrarKey
+        ticket = ticket
+
+
+
+        updateRegisteredList(ticketStatus, initialStatusList)
+        updateRegisteredList(registrarKey, targetList)
+        console.log("INIT STATUS LIST: ", statusListRegistrar.inProgress)
+
+        statusListRegistrar = statusListRegistrar
+        console.debug(targetList.length)
 
         console.info("Redeclaring 'tickets' varaible to trigger update.")
-        tickets = tickets
+
+        console.log(tickets)
     })
 
 
@@ -351,28 +390,32 @@ function droppableArea(node, targetList){
 
 
 
-<div class="tickettimeline">
+<div id="Timeline">
 
-    {#each Object.entries(statusListAssociations) as [ticketStatus, ticketGroup]}
-
-    <h3>{ticketStatus}</h3>
-
+    {#each Object.entries(statusListRegistrar) as [statusRegistrarKey, ticketGroup]}
     
-    <ul>
+    <div id="StatusList">
 
-        <li>
+        
+        <div id="list">
+            <h1>{statusRegistrarKey}</h1>
             
             <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div use:droppableArea={ticketGroup}>
+            <div use:droppableArea={statusRegistrarKey}>
                 {#if ticketGroup.length > 0}
 
-                {#each ticketGroup as ticket}
+                {#each ticketGroup as ticket (ticket.id)} <!-- // key each or else element only taken from list end -->
                 <ul class='tickets'>
-                    <li class="ticket" use:ticketable={[ticket.id, ticket.TicketStatus]}>
-                        <h1>
-                            {ticket.TicketTitle}
-                        </h1>
+
+
+                    <li use:ticketable={[ticket.id, ticket.TicketStatus]}>
+                        
+                        <Ticket ticketObject={ticket}></Ticket>
+                    
                     </li>
+
+
+
                 </ul>
 
                 {/each}
@@ -382,8 +425,8 @@ function droppableArea(node, targetList){
 
                 {/if}
             </div>        
-        </li>
-    </ul>
+        </div>
+    </div>
         
     {/each}
     
@@ -419,12 +462,13 @@ function droppableArea(node, targetList){
 
 
 <style>
-    ul{
-        list-style: none;
+    #StatusList{
+        display: inline-block;
     }
-
-    .column{
-        outline-style: solid;
+    #list{
+        list-style: none;
+        margin-left: 10%;
+        background-color: antiquewhite;
     }
 
 
