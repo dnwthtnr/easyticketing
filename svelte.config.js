@@ -10,7 +10,7 @@ const config = {
 		appDir: "app",
 		adapter: adapter(),
 		paths: {
-			base: process.env.NODE_ENV === 'production' ? '/easyticketing' : '',
+			base: process.env.NODE_ENV === '/easyticketing'
 		}
 	},
 	preprocess: vitePreprocess()
