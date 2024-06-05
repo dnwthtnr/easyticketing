@@ -2,8 +2,9 @@ import { SessionCookieKey } from '$lib/constants'
 import { redirect } from '@sveltejs/kit';
 import { getSessionedUser } from '$lib/server/database/user_actions';
 
-let dev = true
-const root = "/easyticketing"
+import { base } from '$app/paths';
+
+let dev = true;
 
 
 export async function handle({event, resolve}){
@@ -19,8 +20,8 @@ export async function handle({event, resolve}){
     console.log("Session Cookie", sessionCookie)
 
     event.locals.user = {} // set null in case of failed session validations
-    const loginPath = root + '/auth/login'
-    const nonProtectedRoutes = [root, loginPath, root+"/auth/register"]
+    const loginPath = base + '/auth/login'
+    const nonProtectedRoutes = [base, loginPath, base+"/auth/register"]
 
     console.log('Sesssion cookie:', sessionCookie)
 
@@ -51,7 +52,7 @@ export async function handle({event, resolve}){
     }
     if (Object.keys(sessionCookieObject).length == 0){
         console.error("Present session cookie has a size of 0. Deleting present cookie")
-        event.cookies.delete(SessionCookieKey, {path: root})
+        event.cookies.delete(SessionCookieKey, {path: base})
 
         throw redirect(302, loginPath)
     }
@@ -75,7 +76,7 @@ export async function handle({event, resolve}){
     // redirect if user is trying to log in or go to non-member home page
     if (nonProtectedRoutes.indexOf(event.url.pathname) > -1){
         console.log("Redirecting to landing page")
-        throw redirect(302, root+"/landing")
+        throw redirect(302, base+"/landing")
     }
 
     
